@@ -194,8 +194,8 @@ class Solution:
                 ret.append(id)
         return ret
 
-    def cost(self):
-        return eval_sol(self)
+    def cost(self, in_data):
+        return eval_sol(in_data, self)
 
     def cost_lone_sub(self, sub_id):
         return self.cost()
@@ -317,13 +317,13 @@ def output_sol_force_overwrite(name, data):
     with open(str(p), 'w') as f:
         json.dump(sol_to_output(data), f)
 
-def output_sol_if_better(name, data, sol_val=None):
+def output_sol_if_better(name, in_data, data, sol_val=None):
     """ Returns True if the solution is better than the last found solution in this program run,
         even solution already written in the JSON file is even better.
         Updates BEST_SOLS_DATA and BEST_SOLS """
     if sol_val is None:
-        sol_val = eval_sol(data)
-    sol_val = eval_sol(data)
+        sol_val = eval_sol(in_data, data)
+    sol_val = eval_sol(in_data, data)
     if name in BEST_SOLS and not is_better_sol(BEST_SOLS[name], sol_val):
         return False
     BEST_SOLS[name] = sol_val
@@ -335,7 +335,7 @@ def output_sol_if_better(name, data, sol_val=None):
     except FileNotFoundError:
         pass
     if cur_file_sol is not None:
-        old_val = eval_sol(cur_file_sol)
+        old_val = eval_sol(in_data, cur_file_sol)
         if not is_better_sol(old_val, sol_val):
             return True
     print(f"----> Found solution for {name} of value {sol_val}")
