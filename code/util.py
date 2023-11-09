@@ -311,6 +311,9 @@ def output_sol_if_better(name, data):
 
 # ========== Evaluation ==========
 
+def distance(pos1,pos2): #pos1 = (x,y)
+    return sqrt((pos1[0]-pos2[0])**2 + (pos1[1]-pos2[1])**2)
+
 def eval_construction_substation(in_data,out_data):
     c = 0
     sub = out_data.subs
@@ -319,6 +322,47 @@ def eval_construction_substation(in_data,out_data):
             c += in_data.sub_types[i.substation_type].cost
     return c
 
+def eval_cable_onshore_offshore(in_data,out_data):
+    c = 0
+    sub = out_data.subs
+    for i in range(len(sub)):
+        subi = sub[i]
+        if subi!=None:
+            type_c = i.land_cable_type
+            c1 = in_data.land_sub_cable_types[type_c].fixed_cost
+            c2 = in_data.land_sub_cable_types[type_c].variable_cost
+            xsub,ysub=(in_data.sub_locations[i].x,in_data.sub_locations[i].y)
+            d = distance((0,0),(xsub,ysub))
+            c+=c1+d*c2
+    return c
+
+def eval_cable_turbine(in_data,out_data):
+    c = 0
+    turb = out_data.turbines
+    for t in range(len(turb)):
+        i = turb[t]
+        xsub,ysub=(in_data.sub_locations[i].x,in_data.sub_locations[i].y)
+        xturb,yturb=(in_data.turb_locations[t].x,in_data.turb_locations[t].y)
+        d = distance((xsub,ysub),(xturb,yturb))
+        c+=in_data.params.turb_cable_fixed_cost+in_data.params.turb_cable_variable.cost*d
+    return c
+
+def proba_echec_subtation_onshore(in_data,out_data,v):
+    c_type = out_data.subs[v].land_cable_type
+    s_type = out_data.subs[v].substationtype
+    p1 = in_data.land_sub_cable_types[c_type].prob_fail
+    p2 = in_data.sub_types[s_type].prob_fail
+    return p1 + p2
+
+def curtailing_C(in_data,C):
+    return in_data.params.curtailing_cost * C + in_data.params.curtailing_penalty * abs(C - in_data.params.maximum_curtailing)
+
+def curtailing_Cf_scena_fixed(in_data,scena,out_data):
+    return #TODO
+
+def eval_scena_fixed(scena,in_data,out_data):
+
+    return #TODO
 
 def eval_sol(data):
     return 0
