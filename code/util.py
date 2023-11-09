@@ -21,6 +21,15 @@ OUT_SUFFIX = '-out-1' # TODO : to have different solutions names
 
 # TODO: depends on the subject 
 
+MAX_SUBLOCS_HYPOTHESIS = 20
+MAX_SUBLOCS_CHILD_HYPOTHESIS = 4
+
+MAX_ASSIGN_TURB_HYPOTHESIS = 200
+SCENARIO_PRODUCTION_POW = 2
+
+CHOOSE_CABLE_LOST_POWER_COEFF = 2
+CHOOSE_CABLE_PENALTY_COEFF = 1
+
 # ========== Data ==========
 
 @dataclass
@@ -178,6 +187,9 @@ class Solution:
 def dist(loc1, loc2):
     return sqrt((loc1.x - loc2.x)**2 + (loc1.y - loc2.y)**2)
 
+def dist_origin(loc1):
+    return sqrt((loc1.x)**2 + (loc1.y)**2)
+
 def argmin(l): return l.index(min(l))
 def argmax(l): return l.index(max(l))
 
@@ -287,11 +299,12 @@ def output_sol_force_overwrite(name, data):
     with open(str(p), 'w') as f:
         json.dump(sol_to_output(data), f)
 
-def output_sol_if_better(name, data):
+def output_sol_if_better(name, data, sol_val=None):
     """ Returns True if the solution is better than the last found solution in this program run,
         even solution already written in the JSON file is even better.
         Updates BEST_SOLS_DATA and BEST_SOLS """
-    sol_val = eval_sol(data)
+    if sol_val is None:
+        sol_val = eval_sol(data)
     if name in BEST_SOLS and is_better_sol(sol_val, BEST_SOLS[name]):
         return False
     BEST_SOLS[name] = sol_val

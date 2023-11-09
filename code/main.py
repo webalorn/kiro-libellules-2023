@@ -1,5 +1,6 @@
 from util import *
 import time
+from solving import *
 # TODO : should import functions from modules
 
 def generate_base_solution(in_data: Input):
@@ -58,6 +59,8 @@ def main():
         for _ in range(N_TRY_GENERATE):
             sol_data = generate_base_solution(in_data)
             output_sol_if_better(name, sol_data)
+            # sol_data, score = find_best_sol(in_data)
+            # output_sol_if_better(name, sol_data, score)
 
             # TODO: maybe improve a bit at first ?
             # Then output_sol_if_better(name, sol_data)
