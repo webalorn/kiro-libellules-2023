@@ -21,19 +21,22 @@ OUT_SUFFIX = '-out-1' # TODO : to have different solutions names
 
 # TODO: depends on the subject 
 
-# MAX_SUBLOCS_HYPOTHESIS = 20
+# small
+# MAX_SUBLOCS_HYPOTHESIS = 30
 # MAX_SUBLOCS_CHILD_HYPOTHESIS = 4
-# MAX_ASSIGN_TURB_HYPOTHESIS = 200
+# MAX_ASSIGN_TURB_HYPOTHESIS = 40
 
-# MAX_SUBLOCS_HYPOTHESIS = 20
-# MAX_SUBLOCS_CHILD_HYPOTHESIS = 4
-# MAX_ASSIGN_TURB_HYPOTHESIS = 20
+# Medium
+MAX_SUBLOCS_HYPOTHESIS = 10
+MAX_SUBLOCS_CHILD_HYPOTHESIS = 2
+MAX_ASSIGN_TURB_HYPOTHESIS = 30
 
-MAX_SUBLOCS_HYPOTHESIS = 2
-MAX_SUBLOCS_CHILD_HYPOTHESIS = 1
-MAX_ASSIGN_TURB_HYPOTHESIS = 2
+# large, huge
+# MAX_SUBLOCS_HYPOTHESIS = 8
+# MAX_SUBLOCS_CHILD_HYPOTHESIS = 2
+# MAX_ASSIGN_TURB_HYPOTHESIS = 6
 
-SCENARIO_PRODUCTION_POW = 2
+SCENARIO_PRODUCTION_POW = 16
 CHOOSE_CABLE_LOST_POWER_COEFF = 2
 CHOOSE_CABLE_PENALTY_COEFF = 1
 
@@ -203,6 +206,12 @@ class Solution:
                 ret.append(id)
         return ret
 
+    def turbines_of_subs(self):
+        ret = [[] for _ in range(len(self.subs))]
+
+        for turb_id, turb_sub in enumerate(self.turbines):
+            ret[turb_sub].append(turb_id)
+
     def cost(self, in_data):
         return cost_sol(in_data, self)
 
@@ -259,15 +268,15 @@ def read_sol(name):
         data = output_to_sol(IN_DATA[name], json.load(f))
     return data
 
-def sol_to_output(out_data):
+def sol_to_output(sol):
     out = {
         'substations': [],
     }
 
     # Construction substations 
     out["substations"] = []
-    for i in range(len(out_data.subs)):
-        sub = out_data.subs[i]
+    for i in range(len(sol.subs)):
+        sub = sol.subs[i]
         if sub != None:
             d = dict()
             d["id"] = i+1
@@ -277,13 +286,13 @@ def sol_to_output(out_data):
 
     # Construction substation_substation_cables
     s_s_cables = []
-    for i in range(len(out_data.sub_sub_cables)):
+    for i in range(len(sol.sub_sub_cables)):
         d = dict()
-        cable = out_data.sub_sub_cables[i]
+        cable = sol.sub_sub_cables[i]
         d["substation_id"] = cable.sub_id_a+1
         d["other_substation_id"] = cable.sub_id_b+1
         d["cable_type"] = cable.cable_type
-        cable = out_data["sub_sub_cables"][i]
+        cable = sol["sub_sub_cables"][i]
         d["substation_id"] = cable["sub_id_a"]+1
         d["other_substation_id"] = cable["sub_id_b"]+1
         d["cable_type"] = cable["cable_type"]+1
@@ -292,10 +301,10 @@ def sol_to_output(out_data):
 
     #Construction turbines
     turb = []
-    for i in range(len(out_data.turbines)):
+    for i in range(len(sol.turbines)):
         d=dict()
         d["id"] = i+1
-        d["substation_id"] = out_data.turbines[i]+1
+        d["substation_id"] = sol.turbines[i]+1
         turb.append(d)
     out["turbines"] = turb
 
@@ -359,10 +368,10 @@ def output_sol_if_better(in_data, data, sol_val=None):
 
 # ========== Utile pour evaluation ==========
 
-def turbines_subs_link(in_data,out_data): # Retourne une liste de listes, les turbines reliées à chaque sub
+def turbines_subs_link(in_data, sol): # Retourne une liste de listes, les turbines reliées à chaque sub
     nb_sub = len(in_data.sub_locations)
     fils_subs = [[] for _ in range(nb_sub)]
-    turbs = out_data.turbines
+    turbs = sol.turbines
     for i in range(len(turbs)):
         fils_subs[turbs[i]].append(i)
     return fils_subs
@@ -372,17 +381,16 @@ def turbines_subs_link(in_data,out_data): # Retourne une liste de listes, les tu
 def distance(pos1,pos2): #pos1 = (x,y)
     return sqrt((pos1[0]-pos2[0])**2 + (pos1[1]-pos2[1])**2)
 
-def cost_construction_substation(in_data,out_data): #Check
+def cost_construction_substations(in_data, sol): #Check
     c = 0
-    sub = out_data.subs
-    for i in sub:
+    for i in sol.subs:
         if i!=None:
             c += in_data.sub_types[i.substation_type].cost
     return c
 
-def cost_land_subs_cables(in_data,out_data): #Check
+def cost_land_subs_cables(in_data, sol): #Check
     c = 0
-    sub = out_data.subs
+    sub = sol.subs
     for i in range(len(sub)):
         subi = sub[i]
         if subi!=None:
@@ -394,9 +402,9 @@ def cost_land_subs_cables(in_data,out_data): #Check
             c+=c1+d*c2
     return c
 
-def cost_turbine_cables(in_data,out_data): #Check
+def cost_turbine_cables(in_data, sol): #Check
     c = 0
-    turb = out_data.turbines
+    turb = sol.turbines
     for t in range(len(turb)):
         i = turb[t] #Substation reliée à la turbine
         xsub,ysub=(in_data.sub_locations[i].x,in_data.sub_locations[i].y)
@@ -405,8 +413,8 @@ def cost_turbine_cables(in_data,out_data): #Check
         c+=in_data.params.turb_cable_fixed_cost+in_data.params.turb_cable_variable_cost*d
     return c
 
-def cost_sub_sub_cables(in_data,out_data): #Check
-    ss_cables = out_data.sub_sub_cables
+def cost_sub_sub_cables(in_data, sol): #Check
+    ss_cables = sol.sub_sub_cables
     c = 0
     for i in range(len(ss_cables)):
         xa,ya = (in_data.sub_locations[ss_cables[i].sub_id_a].x,in_data.sub_locations[ss_cables[i].sub_id_a].y)
@@ -415,9 +423,9 @@ def cost_sub_sub_cables(in_data,out_data): #Check
         c += (in_data.sub_sub_cable_types[ss_cables[i].cable_type].fixed_cost + in_data.sub_sub_cable_types[ss_cables[i].cable_type].variable_cost*d)
     return c
 
-def proba_echec_sub_land_cable(in_data,out_data,v): #Check
-    c_type = out_data.subs[v].land_cable_type
-    s_type = out_data.subs[v].substation_type
+def proba_echec_sub_land_cable(in_data, sol,v): #Check
+    c_type = sol.subs[v].land_cable_type
+    s_type = sol.subs[v].substation_type
     p1 = in_data.land_sub_cable_types[c_type].prob_fail
     p2 = in_data.sub_types[s_type].prob_fail
     return p1 + p2
@@ -430,31 +438,31 @@ def power_sent_to_v(v_fils,scena):
     turbine_power = scena.turb_power
     return turbine_power * len(v_fils)
 
-def curtailing_v_under_fixed_scena(in_data,scena,out_data,v,turbs_fils):
+def curtailing_v_under_fixed_scena(in_data,scena,sol,v,turbs_fils):
     c = power_sent_to_v(turbs_fils[v],scena)
 
-    sub_type = out_data.subs[v].substation_type
+    sub_type = sol.subs[v].substation_type
     maxcapsub = in_data.sub_types[sub_type].rating
-    cable_type = out_data.subs[v].land_cable_type
+    cable_type = sol.subs[v].land_cable_type
     maxcapcable = in_data.land_sub_cable_types[cable_type].rating
 
     maxcap = min(maxcapsub,maxcapcable)
 
     return max(0,c-maxcap)
 
-def curtailing_Cn_scena_fixed(in_data,out_data,scena,turbs_fils):
-    sub = out_data.subs
+def curtailing_Cn_scena_fixed(in_data, sol,scena,turbs_fils):
+    sub = sol.subs
     c = 0 
     for v in range(len(sub)):
         if sub[v]!=None:
-            c += curtailing_v_under_fixed_scena(in_data,scena,out_data,v,turbs_fils)
+            c += curtailing_v_under_fixed_scena(in_data,scena,sol,v,turbs_fils)
     return c
 
-def curtailing_v_scena_fixed_failure_v(in_data,out_data,scena,v,turbs_fils):
+def curtailing_v_scena_fixed_failure_v(in_data, sol,scena,v,turbs_fils):
     c = power_sent_to_v(turbs_fils[v],scena)
 
     cbis = 0
-    sub_sub_cable = out_data.sub_sub_cables
+    sub_sub_cable = sol.sub_sub_cables
     for i in range(len(sub_sub_cable)):
         cable = sub_sub_cable[i]
         if v == cable.sub_id_a or v == cable.sub_id_b:
@@ -463,13 +471,13 @@ def curtailing_v_scena_fixed_failure_v(in_data,out_data,scena,v,turbs_fils):
     
     return max(0,(c-cbis))
 
-def curtailing_vbar_scena_fixed_failure_v(in_data,out_data,scena,v,turbs_fils):
-    c = 0
+def curtailing_vbar_scena_fixed_failure_v(in_data, sol,scena,v,turbs_fils):
+    
     c3 = power_sent_to_v(turbs_fils[v],scena)
     c1 = 0
     c2 = 0
     maxcap = 0
-    ss_cable = out_data.sub_sub_cables
+    ss_cable = sol.sub_sub_cables
     for i in range(len(ss_cable)):
         if ss_cable[i].sub_id_a == v or ss_cable[i].sub_id_b == v:
             if ss_cable[i].sub_id_a == v:
@@ -479,9 +487,9 @@ def curtailing_vbar_scena_fixed_failure_v(in_data,out_data,scena,v,turbs_fils):
             c1 = power_sent_to_v(turbs_fils[vbar],scena)
             c2 = min(in_data.sub_sub_cable_types[ss_cable[i].cable_type].rating,c3)
 
-            sub_type = out_data.subs[vbar].substation_type
+            sub_type = sol.subs[vbar].substation_type
             maxcapsub = in_data.sub_types[sub_type].rating
-            cable_type = out_data.subs[vbar].land_cable_type
+            cable_type = sol.subs[vbar].land_cable_type
             maxcapcable = in_data.land_sub_cable_types[cable_type].rating
 
             maxcap = min(maxcapsub,maxcapcable)
@@ -491,33 +499,33 @@ def curtailing_vbar_scena_fixed_failure_v(in_data,out_data,scena,v,turbs_fils):
     
 
 
-def curtailing_Cf_scena_fixed(in_data,scena,out_data,v,turbs_fils):
+def curtailing_Cf_scena_fixed(in_data,scena,sol,v,turbs_fils):
 
-    return curtailing_v_scena_fixed_failure_v(in_data,out_data,scena,v,turbs_fils) + curtailing_vbar_scena_fixed_failure_v(in_data,out_data,scena,v,turbs_fils)
+    return curtailing_v_scena_fixed_failure_v(in_data, sol,scena,v,turbs_fils) + curtailing_vbar_scena_fixed_failure_v(in_data, sol,scena,v,turbs_fils)
 
-def cost_scena_fixed(scena,in_data,out_data,turbs_fils):
-    sub = out_data.subs
+def cost_scena_fixed(scena,in_data, sol,turbs_fils):
+    sub = sol.subs
     c = 0
     for v in range(len(sub)):
         if sub[v] != None:
-            c += (proba_echec_sub_land_cable(in_data,out_data,v)*curtailing_C(in_data,curtailing_Cf_scena_fixed(in_data,scena,out_data,v,turbs_fils)))
-            c1 = proba_echec_sub_land_cable(in_data,out_data,v)
+            c += (proba_echec_sub_land_cable(in_data, sol,v)*curtailing_C(in_data,curtailing_Cf_scena_fixed(in_data,scena,sol,v,turbs_fils)))
+            c1 = proba_echec_sub_land_cable(in_data, sol,v)
             c1 = 1 - c1
-            c1 *= curtailing_C(in_data,curtailing_Cn_scena_fixed(in_data,out_data,scena,turbs_fils))
+            c1 *= curtailing_C(in_data,curtailing_Cn_scena_fixed(in_data, sol,scena,turbs_fils))
     return c + c1
 
 
-def cost_operational_cost(in_data,out_data,turbs_fils):
+def cost_operational_cost(in_data, sol,turbs_fils):
     scenario = in_data.wind_scenarios
     c = 0
     for scena in scenario:
-        c += scena.prob * cost_scena_fixed(scena,in_data,out_data,turbs_fils)
+        c += scena.prob * cost_scena_fixed(scena,in_data, sol,turbs_fils)
 
     return c
 
-def cost_sol(in_data,out_data):
-    turbs_fils = turbines_subs_link(in_data,out_data)
-    return cost_construction_substation(in_data,out_data) + cost_land_subs_cables(in_data,out_data) + cost_turbine_cables(in_data,out_data) + cost_sub_sub_cables(in_data,out_data) + cost_operational_cost(in_data,out_data,turbs_fils)
+def cost_sol(in_data, sol):
+    turbs_fils = turbines_subs_link(in_data, sol)
+    return cost_construction_substations(in_data, sol) + cost_land_subs_cables(in_data, sol) + cost_turbine_cables(in_data, sol) + cost_sub_sub_cables(in_data, sol) + cost_operational_cost(in_data, sol,turbs_fils)
 
 def cost_lone_sub(in_data, sol, sub_id, turbines_of_subs):
     return cost_sol(in_data, sol)

@@ -33,7 +33,7 @@ def find_best_sol_stepIsSublocPos(in_data):
         return tuple(new_hyp)
 
     for i_iter in range(n_sublocs):
-        print('find_best_sol_stepIsSublocPos, iterate', i_iter+1)
+        print('find_best_sol_stepIsSublocPos, iterate', i_iter+1, 'best score=', min([h[-1] for h in hypothesis]))
         new_hypothesis = []
         for hyp, sol, score in hypothesis:
             nb_turb_on_sub = [0 for _ in range(n_sublocs)]
@@ -149,7 +149,8 @@ def find_best_sol_setpIsAssignCables(in_data, turbines_assignments):
             )
             sol.subs[sub_id].substation_type = substation_types[0].id
     
+    # return find_best_sol_setpIsAssignPairs()
     score = cost_sol(in_data, sol)
-    # print("Got score of", cost_sol(in_data, sol))
+    # print("Got score of", eval_sol(in_data, sol))
     output_sol_if_better(in_data, sol, score)
     return sol, score
