@@ -40,6 +40,26 @@ class GeneralParameters:
     maximum_power: int
     maximum_curtailing: float
 
+# ---- Out dataclasses
+
+@dataclass
+class OutSubLocation:
+    # pos_id: int
+    land_cable_type: int
+    substation_type: int
+
+@dataclass
+class OutSubSubCable:
+    sub_id_a: int
+    sub_id_b: int
+    cable_type: int
+
+OutTurbineLoc = int
+# @dataclass
+# class OutTurbineLoc:
+#     turb_id: int
+
+
 # ========== Compute vals on sols ==========
 
 def generate_empty_solution(in_data):
