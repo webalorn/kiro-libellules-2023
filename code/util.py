@@ -197,8 +197,11 @@ class Solution:
     def cost(self, in_data):
         return eval_sol(in_data, self)
 
-    def cost_lone_sub(self, sub_id):
-        return self.cost()
+    def cost_lone_sub(self, sub_id, in_data):
+        return self.cost(in_data)
+
+    def cost_paired_sub(self, cable_id, in_data):
+        return self.cost(in_data)
 
 # ---- Data utils functions
 

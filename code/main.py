@@ -50,7 +50,7 @@ def improve_sol(input_data, sol):
 def main():
     inputs_names = INPUT_NAMES
     # If we want to tune only some solutions ->
-    inputs_names = ['toy.json'] 
+    inputs_names = ['toy.json', 'small.json', 'medium.json'] 
 
     start_time = time.time()
     read_all_inputs()
@@ -70,7 +70,7 @@ def main():
         
     
     # This will try to improve every solution stored in ../inputs
-    N_TRY_IMPROVE = 10 # TODO : number of iterations
+    N_TRY_IMPROVE = 1 # TODO : number of iterations
     for name in inputs_names:
         print(f"========== IMPROVE {name} ==========")
         in_data = IN_DATA[name]
