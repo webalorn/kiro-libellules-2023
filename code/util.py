@@ -282,7 +282,6 @@ def output_to_sol(in_data,sol): #in_data preprocess
     nb_pos = len(in_data.sub_locations)
     substation = [None]*nb_pos
     for i in subs:
-        print_info(i)
         substation[i["id"]-1] = SubInstance(land_cable_type=i["land_cable_type"]-1,substation_type=i["substation_type"]-1)
     
     # Construction sub_sub_cables
@@ -319,7 +318,6 @@ def output_sol_if_better(name, data):
     cur_file_sol = None
     try:
         cur_file_sol = read_sol(name)
-        print_info(cur_file_sol)
     except FileNotFoundError:
         pass
     if cur_file_sol is not None:
@@ -459,7 +457,6 @@ def eval_sol(data):
     return 0
 
 def is_better_sol(old_sol_value, new_sol_value):
-    print_info(old_sol_value, new_sol_value)
     return new_sol_value < old_sol_value # TODO : Replace by < if the best value is the lower one
             
 
