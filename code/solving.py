@@ -149,7 +149,7 @@ def find_best_sol_setpIsAssignCables(in_data, turbines_assignments):
             )
             sol.subs[sub_id].substation_type = substation_types[0].id
     
-    score = eval_sol(in_data, sol)
-    # print("Got score of", eval_sol(in_data, sol))
+    score = cost_sol(in_data, sol)
+    # print("Got score of", cost_sol(in_data, sol))
     output_sol_if_better(in_data, sol, score)
     return sol, score

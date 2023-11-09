@@ -204,7 +204,7 @@ class Solution:
         return ret
 
     def cost(self, in_data):
-        return eval_sol(in_data, self)
+        return cost_sol(in_data, self)
 
     def cost_lone_sub(self, sub_id, in_data):
         return self.cost(in_data)
@@ -337,8 +337,8 @@ def output_sol_if_better(in_data, data, sol_val=None):
         Updates BEST_SOLS_DATA and BEST_SOLS """
     name = in_data.name
     if sol_val is None:
-        sol_val = eval_sol(in_data, data)
-    sol_val = eval_sol(in_data, data)
+        sol_val = cost_sol(in_data, data)
+    sol_val = cost_sol(in_data, data)
     if name in BEST_SOLS and not is_better_sol(BEST_SOLS[name], sol_val):
         return False
     BEST_SOLS[name] = sol_val
@@ -350,7 +350,7 @@ def output_sol_if_better(in_data, data, sol_val=None):
     except FileNotFoundError:
         pass
     if cur_file_sol is not None:
-        old_val = eval_sol(in_data, cur_file_sol)
+        old_val = cost_sol(in_data, cur_file_sol)
         if not is_better_sol(old_val, sol_val):
             return True
     print(f"----> Found solution for {name} of value {sol_val}")
@@ -362,7 +362,7 @@ def output_sol_if_better(in_data, data, sol_val=None):
 def distance(pos1,pos2): #pos1 = (x,y)
     return sqrt((pos1[0]-pos2[0])**2 + (pos1[1]-pos2[1])**2)
 
-def eval_construction_substation(in_data,out_data):
+def cost_construction_substation(in_data,out_data):
     c = 0
     sub = out_data.subs
     for i in sub:
@@ -370,7 +370,7 @@ def eval_construction_substation(in_data,out_data):
             c += in_data.sub_types[i.substation_type].cost
     return c
 
-def eval_land_subs_cables(in_data,out_data):
+def cost_land_subs_cables(in_data,out_data):
     c = 0
     sub = out_data.subs
     for i in range(len(sub)):
@@ -384,7 +384,7 @@ def eval_land_subs_cables(in_data,out_data):
             c+=c1+d*c2
     return c
 
-def eval_turbine_cables(in_data,out_data):
+def cost_turbine_cables(in_data,out_data):
     c = 0
     turb = out_data.turbines
     for t in range(len(turb)):
@@ -395,7 +395,7 @@ def eval_turbine_cables(in_data,out_data):
         c+=in_data.params.turb_cable_fixed_cost+in_data.params.turb_cable_variable_cost*d
     return c
 
-def eval_sub_sub_cables(in_data,out_data):
+def cost_sub_sub_cables(in_data,out_data):
     ss_cables = out_data.sub_sub_cables
     c = 0
     for i in range(len(ss_cables)):
@@ -488,7 +488,7 @@ def curtailing_Cf_scena_fixed(in_data,scena,out_data,v):
 
     return curtailing_v_scena_fixed_failure_v(in_data,out_data,scena,v) + curtailing_vbar_scena_fixed_failure_v(in_data,out_data,scena,v)
 
-def eval_scena_fixed(scena,in_data,out_data):
+def cost_scena_fixed(scena,in_data,out_data):
     sub = out_data.subs
     c = 0
     for v in range(len(sub)):
@@ -500,16 +500,16 @@ def eval_scena_fixed(scena,in_data,out_data):
     return c + c1
 
 
-def eval_operational_cost(in_data,out_data):
+def cost_operational_cost(in_data,out_data):
     scenario = in_data.wind_scenarios
     c = 0
     for scena in scenario:
-        c += scena.prob * eval_scena_fixed(scena,in_data,out_data)
+        c += scena.prob * cost_scena_fixed(scena,in_data,out_data)
 
     return c
 
-def eval_sol(in_data,out_data):
-    return eval_construction_substation(in_data,out_data) + eval_land_subs_cables(in_data,out_data) + eval_turbine_cables(in_data,out_data) + eval_sub_sub_cables(in_data,out_data) + eval_operational_cost(in_data,out_data)
+def cost_sol(in_data,out_data):
+    return cost_construction_substation(in_data,out_data) + cost_land_subs_cables(in_data,out_data) + cost_turbine_cables(in_data,out_data) + cost_sub_sub_cables(in_data,out_data) + cost_operational_cost(in_data,out_data)
 
 def is_better_sol(old_sol_value, new_sol_value):
     return new_sol_value < old_sol_value # TODO : Replace by < if the best value is the lower one
