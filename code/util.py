@@ -50,6 +50,17 @@ class GeneralParameters:
     maximum_power: int
     maximum_curtailing: float
 
+    def import_(data):
+        return GeneralParameters(
+            curtailing_penalty = data["curtailing_penalty"]
+            curtailing_cost = data["curtailing_cost"]
+            turb_cable_fixed_cost = data["fixed_cost_cable"]
+            turb_cable_variable_cost = data["variable_cost_cable"]
+            main_land_station = Locaction(**data["main_land_station"])
+            maximum_power = data["maximum_power"]
+            maximum_curtailing = data["maximum_curtailing"]
+        )
+
 @dataclass
 class WindScenario:
     turb_power: int
@@ -65,9 +76,9 @@ class Input:
     wind_scenarios: list[WindScenario]
     turb_locations: list[Locaction]
 
-    def import(data):
+    def import_(data):
         return Input(
-            params = GeneralParameters.import(data["general_parameters"])
+            params = GeneralParameters.import_(data["general_parameters"])
             land_sub_cable_types = CableType.import_list(data["land_substation_cable_types"])
             sub_locations = Locaction.import_list(data["substation_locations"])
             sub_sub_cable_types = CableType.import_list(data["substation_substation_cable_types"])
@@ -110,7 +121,7 @@ def generate_empty_solution(in_data):
 # ========== Input / Output ==========
 
 def preprocess_input(data):
-    return Input.import(data)
+    return Input.import_(data)
 
 def read_input(name):
     p = Path('../inputs') / name
