@@ -441,20 +441,34 @@ def curtailing_vbar_scena_fixed_failure_v(in_data,out_data,scena,v):
     return max(0,c1 + c2 - maxcap)
     
 
-    
 
+def curtailing_Cf_scena_fixed(in_data,scena,out_data,v):
 
-
-def curtailing_Cf_scena_fixed(in_data,scena,out_data):
-
-    return #TODO
+    return curtailing_v_scena_fixed_failure_v(in_data,out_data,scena,v) + curtailing_vbar_scena_fixed_failure_v(in_data,out_data,scena,v)
 
 def eval_scena_fixed(scena,in_data,out_data):
+    sub = out_data.subs
+    c = 0
+    for i in range(len(sub)):
+        if sub[i] != None:
+            v = sub[i]
+            c += (proba_echec_subtation_onshore(in_data,out_data,v)*curtailing_C(in_data,curtailing_Cf_scena_fixed(in_data,scena,out_data,v)))
+            c1 = proba_echec_subtation_onshore(in_data,out_data,v)
+            c1 = 1 - c1
+            c1 *= curtailing_C(in_data,curtailing_Cn_scena_fixed(in_data,out_data,scena))
+    return c + c1
 
-    return #TODO
 
-def eval_sol(data):
-    return 0
+def eval_operational_cost(in_data,out_data):
+    scenario = in_data.wind_scenarios
+    c = 0
+    for scena in scenario:
+        c += scena.prob * eval_scena_fixed(scena,in_data,out_data)
+
+    return c
+
+def eval_sol(in_data,out_data):
+    return eval_construction_substation(in_data,out_data) + eval_operational_cost(in_data,out_data)
 
 def is_better_sol(old_sol_value, new_sol_value):
     return new_sol_value < old_sol_value # TODO : Replace by < if the best value is the lower one
