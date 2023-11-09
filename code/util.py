@@ -356,9 +356,79 @@ def proba_echec_subtation_onshore(in_data,out_data,v):
     return p1 + p2
 
 def curtailing_C(in_data,C):
-    return in_data.params.curtailing_cost * C + in_data.params.curtailing_penalty * abs(C - in_data.params.maximum_curtailing)
+    return in_data.params.curtailing_cost * C + in_data.params.curtailing_penalty * max(0,(C - in_data.params.maximum_curtailing))
+
+
+def curtailing_v_under_fixed_scena(in_data,scena,out_data,v):
+    c = 0
+    turbine_power = scena.turb_power
+    turb = out_data.turbines
+    for i in range(len(turb)):
+        if turb[i] == v:
+            c += turbine_power
+
+    sub_type = out_data.subs[v].substation_type
+    maxcapsub = in_data.sub_types[sub_type].rating
+    cable_type = out_data.subs[v].land_cable_type
+    maxcapcable = in_data.land_sub_cable_types[cable_type].rating
+
+    maxcap = min(maxcapsub,maxcapcable)
+
+    return max(0,c-maxcap)
+
+def curtailing_Cn_scena_fixed(in_data,out_data,scena):
+    sub = out_data.subs
+    c = 0 
+    for v in range(len(sub)):
+        if sub[v]!=None:
+            c += curtailing_v_under_fixed_scena(in_data,scena,out_data,v)
+    return c
+
+def curtailing_v_scena_fixed_failure_v(in_data,out_data,scena,v):
+    c = 0
+    turbine_power = scena.turb_power
+    turb = out_data.turbines
+    for i in range(len(turb)):
+        if turb[i] == v:
+            c += turbine_power
+
+    cbis = 0
+    sub_sub_cable = out_data.sub_sub_cables
+    for i in range(len(sub_sub_cable)):
+        cable = sub_sub_cable[i]
+        if v == cable.sub_id_a or v == cable.sub_id_b:
+            ctype = cable.cable_type
+            cbis += in_data.sub_sub_cable_types[ctype].rating
+    
+    return max(0,(c-cbis))
+
+def voisin_v(in_data,out_data,v):
+    ss_cable = out_data.sub_sub_cables
+    voisin = []
+    for i in range(len(ss_cable)):
+        if v == ss_cable[i].sub_id_a:
+            voisin.append(ss_cable[i].sub_id_b)
+        elif v == ss_cable[i].sub_id_b:
+            voisin.append(ss_cable[i].sub_id_a)
+    return voisin
+
+def curtailing_vbar_scena_fixed_failure_v(in_data,out_data,scena,v):
+    c = 0
+    
+    voisin = voisin_v(in_data,out_data,v)
+    for i in range(voisin):
+        c1 = 0
+        turbine_power = scena.turb_power
+        turb = out_data.turbines
+        for j in range(len(turb)):
+            if turb[j] == voisin[i]:
+                c1 += turbine_power
+    
+
+
 
 def curtailing_Cf_scena_fixed(in_data,scena,out_data):
+
     return #TODO
 
 def eval_scena_fixed(scena,in_data,out_data):
