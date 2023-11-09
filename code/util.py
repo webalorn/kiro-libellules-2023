@@ -112,6 +112,18 @@ class OutData:
     sub_sub_cables: List[OutSubSubCable]
     turbines: List[int]
 
+# ---- Data utils functions
+
+def dist(loc1, loc2):
+    return sqrt((loc1.x - loc2.x)**2, (loc1.y - loc2.y)**2)
+
+def argmin(l): return l.index(min(l))
+def argmax(l): return l.index(max(l))
+
+def dict_min(d): return min(d.values())
+def dict_max(d): return max(d.values())
+def dict_argmin(d):m = dict_min(d);return [el for el, v in d.items() if v==m][0]
+def dict_argmax(d):m = dict_max(d);return [el for el, v in d.items() if v==m][0]
 
 # ========== Compute vals on sols ==========
 
