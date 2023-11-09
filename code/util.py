@@ -357,6 +357,16 @@ def output_sol_if_better(in_data, data, sol_val=None):
     output_sol_force_overwrite(name, data)
     return True
 
+# ========== Utile pour evaluation ==========
+
+def turbines_subs_link(in_data,out_data): # Retourne une liste de listes, les turbines reliées à chaque sub
+    nb_sub = len(in_data.sub_locations)
+    fils_subs = [[] for _ in range(nb_sub)]
+    turbs = out_data.turbines
+    for i in range(len(turbs)):
+        fils_subs[turbs[i]].append(i)
+    return fils_subs
+
 # ========== Evaluation ==========
 
 def distance(pos1,pos2): #pos1 = (x,y)
