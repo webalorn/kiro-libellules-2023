@@ -1,6 +1,9 @@
+import util
+
 def optimize_types(input_data, sol):
     for sub_id in sol.lone_subs():
-        min_cost = sol.cost_lone_sub(sub_id)
+        util.print_info(sub_id)
+        min_cost = sol.cost_lone_sub(sub_id, input_data)
         best_sub_type = sol.subs[sub_id].substation_type
         best_cable_type = sol.subs[sub_id].land_cable_type
 
@@ -8,7 +11,7 @@ def optimize_types(input_data, sol):
             for cable_type in range(len(input_data.land_sub_cable_types)):
                 sol.subs[sub_id].substation_type = sub_type
                 sol.subs[sub_id].land_cable_type = cable_type
-                cost = sol.cost_lone_sub(sub_id)
+                cost = sol.cost_lone_sub(sub_id, input_data)
                 if cost < min_cost:
                     min_cost = cost
                     best_sub_type = sub_type
@@ -17,8 +20,11 @@ def optimize_types(input_data, sol):
         sol.subs[sub_id].substation_type = best_sub_type
         sol.subs[sub_id].land_cable_type = best_cable_type
 
+    # Skip very slow
+    return
+
     for cable_id, cable in enumerate(sol.sub_sub_cables):
-        min_cost = sol.cost_paired_subs(cable_id)
+        min_cost = sol.cost_paired_subs(cable_id, input_data)
         best_sub_type_a = sol.subs[cable.sub_id_a].substation_type
         best_cable_type_a = sol.subs[cable.sub_id_a].land_cable_type
         best_sub_type_b = sol.subs[cable.sub_id_b].substation_type
@@ -35,7 +41,7 @@ def optimize_types(input_data, sol):
                             sol.subs[cable.sub_id_b].substation_type = sub_type_b
                             sol.subs[cable.sub_id_b].land_cable_type = cable_type_b
                             cable.cable_id = cable_type_pair
-                            cost = sol.cost_paired_subs(cable_id)
+                            cost = sol.cost_paired_subs(cable_id, input_data)
                             if cost < min_cost:
                                 min_cost = cost
                                 best_sub_type_a = sub_type_a

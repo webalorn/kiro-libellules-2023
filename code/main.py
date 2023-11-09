@@ -49,8 +49,9 @@ def improve_sol(input_data, sol):
 
 def main():
     inputs_names = INPUT_NAMES
-    # If we want to tune only some solutions ->
-    inputs_names = ['toy.json'] 
+    # # If we want to tune only some solutions ->
+    # inputs_names = ['toy.json', 'small.json', 'medium.json', 'large.json', 'huge.json']
+    inputs_names = ['medium.json'] 
 
     start_time = time.time()
     read_all_inputs()
@@ -60,17 +61,17 @@ def main():
         print(f"========== GENERATE {name} ==========")
         in_data = IN_DATA[name]
         for _ in range(N_TRY_GENERATE):
-            sol_data = generate_base_solution(in_data)
-            output_sol_if_better(name, in_data, sol_data)
-            # sol_data, score = find_best_sol(in_data)
-            # output_sol_if_better(name, in_data, sol_data, score)
+            # sol_data = generate_base_solution(in_data)
+            # output_sol_if_better(in_data, sol_data)
+            sol_data, score = find_best_sol(in_data)
+            output_sol_if_better(in_data, sol_data, score)
 
             # TODO: maybe improve a bit at first ?
             # Then output_sol_if_better(name, sol_data)
         
     
     # This will try to improve every solution stored in ../inputs
-    N_TRY_IMPROVE = 10 # TODO : number of iterations
+    N_TRY_IMPROVE = 1 # TODO : number of iterations
     for name in inputs_names:
         print(f"========== IMPROVE {name} ==========")
         in_data = IN_DATA[name]
