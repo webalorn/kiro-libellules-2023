@@ -206,6 +206,12 @@ class Solution:
                 ret.append(id)
         return ret
 
+    def turbines_of_subs(self):
+        ret = [[] for _ in range(len(self.subs))]
+
+        for turb_id, turb_sub in enumerate(self.turbines):
+            ret[turb_sub].append(turb_id)
+
     def cost(self, in_data):
         return cost_sol(in_data, self)
 
