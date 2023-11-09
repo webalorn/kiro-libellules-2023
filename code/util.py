@@ -295,7 +295,7 @@ def output_sol_if_better(name, data):
 
 # ========== Evaluation ==========
 
-def construction_substation(in_data,out_data):
+def eval_construction_substation(in_data,out_data):
     c = 0
     sub = out_data.subs
     for i in sub:
