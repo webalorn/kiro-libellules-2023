@@ -2,6 +2,7 @@ from pathlib import Path
 from collections import deque, namedtuple
 from math import *
 from random import randint, shuffle
+from dataclasses import dataclass, asdict
 
 import numpy as np
 
@@ -18,6 +19,26 @@ OUT_SUFFIX = '-out-1' # TODO : to have different solutions names
 # ========== Constants ==========
 
 # TODO: depends on the subject
+
+# ========== Data ==========
+
+@dataclass
+class CableType:
+    rating: int
+    variable_cost: float
+    id: int
+    fixed_cost: float
+    probability_of_failure: float
+
+@dataclass
+class GeneralParameters:
+    fixed_cost_cable: float
+    variable_cost_cable: float
+    curtailing_penalty: float
+    curtailing_cost: float
+    main_land_station: dict
+    maximum_power: int
+    maximum_curtailing: float
 
 # ========== Compute vals on sols ==========
 
