@@ -151,8 +151,8 @@ def sol_to_output(out_data):
     for i in range(len(out_data["sub_sub_cables"])):
         d = dict()
         cable = out_data["sub_sub_cables"][i]
-        d["substation_id"] = cable["sub_id_a"]
-        d["other_substation_id"] = cable["sub_id_b"]
+        d["substation_id"] = cable["sub_id_a"]+1
+        d["other_substation_id"] = cable["sub_id_b"]+1
         d["cable_type"] = cable["cable_type"]
         s_s_cables.append(d)
     out["substation_substation_cables"]=s_s_cables
@@ -162,14 +162,36 @@ def sol_to_output(out_data):
     for i in range(len(out_data["turbines"])):
         d=dict()
         d["id"] = i+1
-        d["substation_id"] = out_data["turbines"][i]
+        d["substation_id"] = out_data["turbines"][i]+1
         turb.append(d)
     out["turbines"] = turb
 
     return out
 
-def output_to_sol(data):
-    return data # TODO
+def output_to_sol(in_data,sol): #in_data preprocess
+
+    # Construction subs
+    sub = sol["substations"]
+    nb_pos = len(in_data["sub_locations"])
+    substation = [None]*nb_pos
+    for i in sub:
+        substation[i["id"]-1] = OutSubLocation(land_cable_type=i["land_cable_type"],substation_type=i["substation_type"])
+    
+    # Construction sub_sub_cables
+    ss_cables = []
+    cables = sol["substation_substation_cables"]
+    for c in cables:
+        ss_cables.append(OutSubSubCable(sub_id_a=c["substation_id"]-1,sub_id_b=c["ohter_substation_id"]-1,cable_type=c["cable_type"]))
+    
+    # Construction turbines
+    turb = sol["turbines"]
+    new_turb = []
+    for t in turb:
+        new_turb.append(t["substation_id"]-1)
+
+    return OutData(subs=substation,sub_sub_cables=ss_cables,turbines=new_turb) 
+
+
 
 def output_sol_force_overwrite(name, data):
     p = Path('../sols') / _out_with_suffix(name)
