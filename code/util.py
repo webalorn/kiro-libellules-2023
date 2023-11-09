@@ -3,6 +3,7 @@ from collections import deque, namedtuple
 from math import *
 from random import randint, shuffle
 from dataclasses import dataclass, asdict
+from typing import Dict, List, Optinial, Tuple
 
 import numpy as np
 
@@ -69,12 +70,12 @@ class WindScenario:
 @dataclass
 class Input:
     params: GeneralParameters
-    land_sub_cable_types: list[CableType]
-    sub_locations: list[Locaction]
-    sub_sub_cable_types: list[CableType]
-    sub_types: list[SubstationType]
-    wind_scenarios: list[WindScenario]
-    turb_locations: list[Locaction]
+    land_sub_cable_types: List[CableType]
+    sub_locations: List[Locaction]
+    sub_sub_cable_types: List[CableType]
+    sub_types: List[SubstationType]
+    wind_scenarios: List[WindScenario]
+    turb_locations: List[Locaction]
 
     def import_(data):
         return Input(
