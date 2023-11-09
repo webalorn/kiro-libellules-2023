@@ -297,10 +297,10 @@ def output_sol_if_better(name, data):
 
 def construction_substation(in_data,out_data):
     c = 0
-    sub = out_data["subs"]
+    sub = out_data.subs
     for i in sub:
         if i!=None:
-            c += in_data["sub_types"][i["substation_type"]]["cost"]
+            c += in_data.sub_types[i["substation_type"]].cost
     return c
 
 
