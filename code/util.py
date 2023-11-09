@@ -382,7 +382,7 @@ def eval_cable_turbine(in_data,out_data):
 
 def proba_echec_subtation_onshore(in_data,out_data,v):
     c_type = out_data.subs[v].land_cable_type
-    s_type = out_data.subs[v].substationtype
+    s_type = out_data.subs[v].substation_type
     p1 = in_data.land_sub_cable_types[c_type].prob_fail
     p2 = in_data.sub_types[s_type].prob_fail
     return p1 + p2
@@ -435,6 +435,9 @@ def curtailing_v_scena_fixed_failure_v(in_data,out_data,scena,v):
 def curtailing_vbar_scena_fixed_failure_v(in_data,out_data,scena,v):
     
     c3 = power_sent_to_v(in_data,out_data,v,scena)
+    c1 = 0
+    c2 = 0
+    maxcap = 0
     ss_cable = out_data.sub_sub_cables
     for i in range(len(ss_cable)):
         if ss_cable[i].sub_id_a == v or ss_cable[i].sub_id_b == v:
@@ -463,9 +466,8 @@ def curtailing_Cf_scena_fixed(in_data,scena,out_data,v):
 def eval_scena_fixed(scena,in_data,out_data):
     sub = out_data.subs
     c = 0
-    for i in range(len(sub)):
-        if sub[i] != None:
-            v = sub[i]
+    for v in range(len(sub)):
+        if sub[v] != None:
             c += (proba_echec_subtation_onshore(in_data,out_data,v)*curtailing_C(in_data,curtailing_Cf_scena_fixed(in_data,scena,out_data,v)))
             c1 = proba_echec_subtation_onshore(in_data,out_data,v)
             c1 = 1 - c1
