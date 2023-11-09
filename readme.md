@@ -29,5 +29,5 @@ Pour les petits cas, on peut essayer de résoudre / optimiser à la main !! [En 
 # Membres
 
 - Théophane Vallaeys (@webalorn)
-- ?
+- Victor Miquel (@Swire42)
 - ?
