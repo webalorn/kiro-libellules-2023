@@ -3,7 +3,7 @@ from collections import deque, namedtuple
 from math import *
 from random import randint, shuffle
 from dataclasses import dataclass, asdict
-from typing import Dict, List, Optinial, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
@@ -25,21 +25,82 @@ OUT_SUFFIX = '-out-1' # TODO : to have different solutions names
 
 @dataclass
 class CableType:
-    rating: int
+    rating: float
     variable_cost: float
     fixed_cost: float
-    prob_fail: float
+    prob_fail: Optional[float]
+
+    def import_(data):
+        return CableType(
+            rating = data["rating"],
+            variable_cost = data["variable_cost"],
+            fixed_cost = data["fixed_cost"],
+            prob_fail = data.get("probability_of_failure")
+        )
+
+    def import_list(data):
+        def aux(data, id):
+            assert data["id"] == id+1
+            return CableType.import_(data)
+
+        return [aux(item, id) for id, item in enumerate(data)]
+
 
 @dataclass
-class Locaction:
-    x: int
-    y: int
+class Location:
+    x: float
+    y: float
+
+    def import_(data):
+        return Location(
+            x = data["x"],
+            y = data["y"]
+        )
+
+    def import_list(data):
+        def aux(data, id):
+            assert data["id"] == id+1
+            return Location.import_(data)
+
+        return [aux(item, id) for id, item in enumerate(data)]
 
 @dataclass
 class SubstationType:
-    cost: int
+    cost: float
     prob_fail: float
-    rating: int
+    rating: float
+
+    def import_(data):
+        return SubstationType(
+            cost = data["cost"],
+            prob_fail = data["probability_of_failure"],
+            rating = data["rating"]
+        )
+
+    def import_list(data):
+        def aux(data, id):
+            assert data["id"] == id+1
+            return SubstationType.import_(data)
+
+        return [aux(item, id) for id, item in enumerate(data)]
+
+@dataclass
+class WindScenario:
+    turb_power: float
+    prob: float
+
+    def import_(data):
+        return WindScenario(
+            turb_power = data["power_generation"],
+            prob = data["probability"]
+        )
+
+    def import_list(data):
+        def aux(data, id):
+            assert data["id"] == id+1
+            return WindScenario.import_(data)
+
+        return [aux(item, id) for id, item in enumerate(data)]
 
 @dataclass
 class GeneralParameters:
@@ -47,45 +108,40 @@ class GeneralParameters:
     curtailing_cost: float
     turb_cable_fixed_cost: float
     turb_cable_variable_cost: float
-    main_land_station: Locaction
-    maximum_power: int
+    main_land_station: Location
+    maximum_power: float
     maximum_curtailing: float
 
     def import_(data):
         return GeneralParameters(
-            curtailing_penalty = data["curtailing_penalty"]
-            curtailing_cost = data["curtailing_cost"]
-            turb_cable_fixed_cost = data["fixed_cost_cable"]
-            turb_cable_variable_cost = data["variable_cost_cable"]
-            main_land_station = Locaction(**data["main_land_station"])
-            maximum_power = data["maximum_power"]
+            curtailing_penalty = data["curtailing_penalty"],
+            curtailing_cost = data["curtailing_cost"],
+            turb_cable_fixed_cost = data["fixed_cost_cable"],
+            turb_cable_variable_cost = data["variable_cost_cable"],
+            main_land_station = Location(**data["main_land_station"]),
+            maximum_power = data["maximum_power"],
             maximum_curtailing = data["maximum_curtailing"]
         )
-
-@dataclass
-class WindScenario:
-    turb_power: int
-    prob: float
 
 @dataclass
 class Input:
     params: GeneralParameters
     land_sub_cable_types: List[CableType]
-    sub_locations: List[Locaction]
+    sub_locations: List[Location]
     sub_sub_cable_types: List[CableType]
     sub_types: List[SubstationType]
     wind_scenarios: List[WindScenario]
-    turb_locations: List[Locaction]
+    turb_locations: List[Location]
 
     def import_(data):
         return Input(
-            params = GeneralParameters.import_(data["general_parameters"])
-            land_sub_cable_types = CableType.import_list(data["land_substation_cable_types"])
-            sub_locations = Locaction.import_list(data["substation_locations"])
-            sub_sub_cable_types = CableType.import_list(data["substation_substation_cable_types"])
-            sub_types = SubstationType.import_list(data["substation_types"])
-            wind_scenarios = WindScenario.import_list(data["wind_scenarios"])
-            turb_locations = Locaction.import_list(data["wind_turbines"])
+            params = GeneralParameters.import_(data["general_parameters"]),
+            land_sub_cable_types = CableType.import_list(data["land_substation_cable_types"]),
+            sub_locations = Location.import_list(data["substation_locations"]),
+            sub_sub_cable_types = CableType.import_list(data["substation_substation_cable_types"]),
+            sub_types = SubstationType.import_list(data["substation_types"]),
+            wind_scenarios = WindScenario.import_list(data["wind_scenarios"]),
+            turb_locations = Location.import_list(data["wind_turbines"])
         )
 
 # ---- Out dataclasses
