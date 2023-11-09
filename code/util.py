@@ -300,7 +300,7 @@ def eval_construction_substation(in_data,out_data):
     sub = out_data.subs
     for i in sub:
         if i!=None:
-            c += in_data.sub_types[i["substation_type"]].cost
+            c += in_data.sub_types[i.substation_type].cost
     return c
 
 
