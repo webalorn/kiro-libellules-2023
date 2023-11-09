@@ -206,8 +206,11 @@ class Solution:
     def cost(self, in_data):
         return eval_sol(in_data, self)
 
-    def cost_lone_sub(self, sub_id):
-        return self.cost()
+    def cost_lone_sub(self, sub_id, in_data):
+        return self.cost(in_data)
+
+    def cost_paired_sub(self, cable_id, in_data):
+        return self.cost(in_data)
 
 # ---- Data utils functions
 
@@ -367,7 +370,7 @@ def eval_construction_substation(in_data,out_data):
             c += in_data.sub_types[i.substation_type].cost
     return c
 
-def eval_cable_onshore_offshore(in_data,out_data):
+def eval_land_subs_cables(in_data,out_data):
     c = 0
     sub = out_data.subs
     for i in range(len(sub)):
@@ -381,15 +384,25 @@ def eval_cable_onshore_offshore(in_data,out_data):
             c+=c1+d*c2
     return c
 
-def eval_cable_turbine(in_data,out_data):
+def eval_turbine_cables(in_data,out_data):
     c = 0
     turb = out_data.turbines
     for t in range(len(turb)):
-        i = turb[t]
+        i = turb[t] #Substation reliée à la turbine
         xsub,ysub=(in_data.sub_locations[i].x,in_data.sub_locations[i].y)
         xturb,yturb=(in_data.turb_locations[t].x,in_data.turb_locations[t].y)
         d = distance((xsub,ysub),(xturb,yturb))
         c+=in_data.params.turb_cable_fixed_cost+in_data.params.turb_cable_variable.cost*d
+    return c
+
+def eval_sub_sub_cables(in_data,out_data):
+    ss_cables = out_data.sub_sub_cables
+    c = 0
+    for i in range(len(ss_cables)):
+        xa,ya = (in_data.sub_locations[ss_cables[i].sub_id_a].x,in_data.sub_locations[ss_cables[i].sub_id_a].y)
+        xb,yb = (in_data.sub_locations[ss_cables[i].sub_id_b].x,in_data.sub_locations[ss_cables[i].sub_id_b].y)
+        d = distance((xa,ya),(xb,yb))
+        c += (in_data.sub_sub_cable_types[ss_cables[i].cable_type].fixed_cost + in_data.sub_sub_cable_types[ss_cables[i].cable_type].variable_cost*d)
     return c
 
 def proba_echec_subtation_onshore(in_data,out_data,v):
@@ -496,7 +509,7 @@ def eval_operational_cost(in_data,out_data):
     return c
 
 def eval_sol(in_data,out_data):
-    return eval_construction_substation(in_data,out_data) + eval_operational_cost(in_data,out_data)
+    return eval_construction_substation(in_data,out_data) + eval_land_subs_cables(in_data,out_data) + eval_turbine_cables(in_data,out_data) + eval_sub_sub_cables(in_data,out_data) + eval_operational_cost(in_data,out_data)
 
 def is_better_sol(old_sol_value, new_sol_value):
     return new_sol_value < old_sol_value # TODO : Replace by < if the best value is the lower one
