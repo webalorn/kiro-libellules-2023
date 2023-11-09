@@ -84,6 +84,12 @@ OutTurbineLoc = int
 # class OutTurbineLoc:
 #     turb_id: int
 
+@dataclass
+class OutData:
+    subs: List[Optional[OutSubLocation]]
+    sub_sub_cables: List[OutSubSubCable]
+    turbines: List[int]
+
 
 # ========== Compute vals on sols ==========
 
