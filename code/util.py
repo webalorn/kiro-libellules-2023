@@ -216,10 +216,12 @@ def read_sol(name):
     return data
 
 def sol_to_output(out_data):
-    out = dict()
+    out = {
+        'substations': [],
+    }
 
     # Construction substations 
-    substation = []
+    out["substations"] = []
     for i in range(len(out_data.subs)):
         sub = out_data.subs[i]
         if sub != None:
@@ -227,8 +229,7 @@ def sol_to_output(out_data):
             d["id"] = i+1
             d["land_cable_type"] = sub.land_cable_type + 1
             d["substation_type"] = sub.substation_type + 1
-            substation.append(d)
-    out["substations"] = d
+            out["substations"].append(d)
 
     # Construction substation_substation_cables
     s_s_cables = []
