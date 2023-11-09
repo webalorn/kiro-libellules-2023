@@ -26,10 +26,10 @@ def generate_base_solution(in_data: Input):
     for sub_id in range(n_subs):
         power_here = max_power * len(turbs_at_sub[sub_id])
         if power_here:
-            sol.subs[sub_id] = OutSubLocation()
+            sol.subs[sub_id] = OutSubLocation(None, None)
 
             cables_types = list(in_data.land_sub_cable_types)
-            cables_types.sort(key=lambda c_type: (c_type < power_here, c_type.fixed_cost))
+            cables_types.sort(key=lambda c_type: (c_type.rating < power_here, c_type.fixed_cost))
             sol.subs[sub_id].land_cable_type = cables_types[0].id
 
             substation_types = list(in_data.sub_types)
@@ -50,8 +50,6 @@ def main():
 
     start_time = time.time()
     read_all_inputs()
-
-    return
 
     N_TRY_GENERATE = 1 # TODO : number of iterations
     for name in inputs_names:
