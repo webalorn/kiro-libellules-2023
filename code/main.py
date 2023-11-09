@@ -51,7 +51,7 @@ def main():
     inputs_names = INPUT_NAMES
     # # If we want to tune only some solutions ->
     # inputs_names = ['toy.json', 'small.json', 'medium.json', 'large.json', 'huge.json']
-    inputs_names = ['huge.json'] 
+    inputs_names = ['medium.json'] 
 
     start_time = time.time()
     read_all_inputs()
@@ -77,7 +77,7 @@ def main():
         in_data = IN_DATA[name]
         for _ in range(N_TRY_IMPROVE):
             sol_data = improve_sol(in_data, BEST_SOLS_DATA[name])
-            output_sol_if_better(name, in_data, sol_data)
+            output_sol_if_better(in_data, sol_data)
     
     
     end_time = time.time()
