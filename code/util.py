@@ -27,9 +27,8 @@ OUT_SUFFIX = '-out-1' # TODO : to have different solutions names
 class CableType:
     rating: int
     variable_cost: float
-    id: int
     fixed_cost: float
-    probability_of_failure: float
+    prob_fail: float
 
 @dataclass
 class GeneralParameters:
@@ -40,6 +39,36 @@ class GeneralParameters:
     main_land_station: dict
     maximum_power: int
     maximum_curtailing: float
+
+@dataclass
+class Locaction:
+    x: int
+    y: int
+
+@dataclass
+class SubstationType:
+
+
+@dataclass
+class SubstationType:
+    cost: int
+    prob_fail: float
+    rating: int
+
+@dataclass
+class WindScenario:
+    turb_power: int
+    prob: float
+
+@dataclass
+class Input:
+    params: GeneralParameters
+    land_sub_cable_types: list[CableType]
+    sub_locations: list[Locaction]
+    sub_sub_cable_types: list[CableType]
+    sub_types: list[SubstationType]
+    wind_scenarios: list[WindScenario]
+    turb_locations: list[Locaction]
 
 # ---- Out dataclasses
 
