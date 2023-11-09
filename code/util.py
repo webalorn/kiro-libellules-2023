@@ -405,7 +405,7 @@ def cost_sub_sub_cables(in_data,out_data):
         c += (in_data.sub_sub_cable_types[ss_cables[i].cable_type].fixed_cost + in_data.sub_sub_cable_types[ss_cables[i].cable_type].variable_cost*d)
     return c
 
-def proba_echec_subtation_onshore(in_data,out_data,v):
+def proba_echec_sub_land_cable(in_data,out_data,v):
     c_type = out_data.subs[v].land_cable_type
     s_type = out_data.subs[v].substation_type
     p1 = in_data.land_sub_cable_types[c_type].prob_fail
@@ -493,8 +493,8 @@ def cost_scena_fixed(scena,in_data,out_data):
     c = 0
     for v in range(len(sub)):
         if sub[v] != None:
-            c += (proba_echec_subtation_onshore(in_data,out_data,v)*curtailing_C(in_data,curtailing_Cf_scena_fixed(in_data,scena,out_data,v)))
-            c1 = proba_echec_subtation_onshore(in_data,out_data,v)
+            c += (proba_echec_sub_land_cable(in_data,out_data,v)*curtailing_C(in_data,curtailing_Cf_scena_fixed(in_data,scena,out_data,v)))
+            c1 = proba_echec_sub_land_cable(in_data,out_data,v)
             c1 = 1 - c1
             c1 *= curtailing_C(in_data,curtailing_Cn_scena_fixed(in_data,out_data,scena))
     return c + c1
