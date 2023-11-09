@@ -209,8 +209,8 @@ def sol_to_output(out_data):
         if sub != None:
             d = dict()
             d["id"] = i+1
-            d["land_cable_type"] = sub["land_cable_type"]
-            d["substation_type"] = sub["substation_type"]
+            d["land_cable_type"] = sub["land_cable_type"]+1
+            d["substation_type"] = sub["substation_type"]+1
             substation.append(d)
     out["substations"] = d
 
@@ -221,7 +221,7 @@ def sol_to_output(out_data):
         cable = out_data["sub_sub_cables"][i]
         d["substation_id"] = cable["sub_id_a"]+1
         d["other_substation_id"] = cable["sub_id_b"]+1
-        d["cable_type"] = cable["cable_type"]
+        d["cable_type"] = cable["cable_type"]+1
         s_s_cables.append(d)
     out["substation_substation_cables"]=s_s_cables
 
@@ -243,13 +243,13 @@ def output_to_sol(in_data,sol): #in_data preprocess
     nb_pos = len(in_data["sub_locations"])
     substation = [None]*nb_pos
     for i in sub:
-        substation[i["id"]-1] = OutSubLocation(land_cable_type=i["land_cable_type"],substation_type=i["substation_type"])
+        substation[i["id"]-1] = OutSubLocation(land_cable_type=i["land_cable_type"]-1,substation_type=i["substation_type"]-1)
     
     # Construction sub_sub_cables
     ss_cables = []
     cables = sol["substation_substation_cables"]
     for c in cables:
-        ss_cables.append(OutSubSubCable(sub_id_a=c["substation_id"]-1,sub_id_b=c["ohter_substation_id"]-1,cable_type=c["cable_type"]))
+        ss_cables.append(OutSubSubCable(sub_id_a=c["substation_id"]-1,sub_id_b=c["ohter_substation_id"]-1,cable_type=c["cable_type"]-1))
     
     # Construction turbines
     turb = sol["turbines"]
@@ -290,6 +290,15 @@ def output_sol_if_better(name, data):
     return True
 
 # ========== Evaluation ==========
+
+def construction_substation(in_data,out_data):
+    c = 0
+    sub = out_data["subs"]
+    for i in sub:
+        if i!=None:
+            c += in_data["sub_types"][i["substation_type"]]["cost"]
+    return c
+
 
 def eval_sol(data):
     return 0
