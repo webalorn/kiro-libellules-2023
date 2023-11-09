@@ -259,6 +259,14 @@ def read_all_inputs():
     for name in INPUT_NAMES:
         IN_DATA[name] = read_input(name)
 
+def read_all_outputs(input_names):
+    for name in input_names:
+        data = read_sol(name)
+        cost = cost_sol(IN_DATA[name], data)
+        if name not in BEST_SOLS:
+            BEST_SOLS[name] = cost
+            BEST_SOLS_DATA[name] = data
+
 def _out_with_suffix(name):
     return name[:-5] + OUT_SUFFIX + name[-5:]
 
