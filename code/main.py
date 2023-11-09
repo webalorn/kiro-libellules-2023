@@ -7,7 +7,7 @@ def generate_base_solution(in_data: Input):
     n_subs = len(in_data.sub_locations)
     n_turbs = len(in_data.turb_locations)
 
-    sol = OutData(
+    sol = Solution(
         subs=[None for _ in range(n_subs)],
         sub_sub_cables=[],
         turbines=[None for _ in range(n_turbs)],
@@ -26,7 +26,7 @@ def generate_base_solution(in_data: Input):
     for sub_id in range(n_subs):
         power_here = max_power * len(turbs_at_sub[sub_id])
         if power_here:
-            sol.subs[sub_id] = OutSubLocation(None, None)
+            sol.subs[sub_id] = SubInstance(None, None)
 
             cables_types = list(in_data.land_sub_cable_types)
             cables_types.sort(key=lambda c_type: (c_type.rating < power_here, c_type.fixed_cost))
