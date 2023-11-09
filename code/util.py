@@ -2,6 +2,7 @@ from pathlib import Path
 from collections import deque, namedtuple
 from math import *
 from random import randint, shuffle
+from typing import List, Optional
 from dataclasses import dataclass, asdict
 
 import numpy as np
@@ -58,6 +59,12 @@ OutTurbineLoc = int
 # @dataclass
 # class OutTurbineLoc:
 #     turb_id: int
+
+@dataclass
+class OutData:
+    subs: List[Optional[OutSubLocation]]
+    sub_sub_cables: List[OutSubSubCable]
+    turbines: List[int]
 
 
 # ========== Compute vals on sols ==========
