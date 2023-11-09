@@ -230,7 +230,7 @@ def _out_with_suffix(name):
 def read_sol(name):
     p = Path('../sols') / _out_with_suffix(name)
     with open(str(p), 'r') as f:
-        data = output_to_sol(json.load(f))
+        data = output_to_sol(IN_DATA[name], json.load(f))
     return data
 
 def sol_to_output(out_data):
@@ -278,10 +278,11 @@ def sol_to_output(out_data):
 def output_to_sol(in_data,sol): #in_data preprocess
 
     # Construction subs
-    sub = sol["substations"]
-    nb_pos = len(in_data["sub_locations"])
+    subs = sol["substations"]
+    nb_pos = len(in_data.sub_locations)
     substation = [None]*nb_pos
-    for i in sub:
+    for i in subs:
+        print_info(i)
         substation[i["id"]-1] = SubInstance(land_cable_type=i["land_cable_type"]-1,substation_type=i["substation_type"]-1)
     
     # Construction sub_sub_cables
