@@ -77,7 +77,7 @@ def main():
         in_data = IN_DATA[name]
         for _ in range(N_TRY_IMPROVE):
             sol_data = improve_sol(in_data, BEST_SOLS_DATA[name])
-            output_sol_if_better(name, in_data, sol_data)
+            output_sol_if_better(in_data, sol_data)
     
     
     end_time = time.time()
