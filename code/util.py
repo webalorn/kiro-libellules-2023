@@ -362,7 +362,7 @@ def output_sol_if_better(in_data, data, sol_val=None):
 def distance(pos1,pos2): #pos1 = (x,y)
     return sqrt((pos1[0]-pos2[0])**2 + (pos1[1]-pos2[1])**2)
 
-def cost_construction_substation(in_data,out_data):
+def cost_construction_substation(in_data,out_data): #Check
     c = 0
     sub = out_data.subs
     for i in sub:
@@ -370,7 +370,7 @@ def cost_construction_substation(in_data,out_data):
             c += in_data.sub_types[i.substation_type].cost
     return c
 
-def cost_land_subs_cables(in_data,out_data):
+def cost_land_subs_cables(in_data,out_data): #Check
     c = 0
     sub = out_data.subs
     for i in range(len(sub)):
@@ -384,7 +384,7 @@ def cost_land_subs_cables(in_data,out_data):
             c+=c1+d*c2
     return c
 
-def cost_turbine_cables(in_data,out_data):
+def cost_turbine_cables(in_data,out_data): #Check
     c = 0
     turb = out_data.turbines
     for t in range(len(turb)):
@@ -395,7 +395,7 @@ def cost_turbine_cables(in_data,out_data):
         c+=in_data.params.turb_cable_fixed_cost+in_data.params.turb_cable_variable_cost*d
     return c
 
-def cost_sub_sub_cables(in_data,out_data):
+def cost_sub_sub_cables(in_data,out_data): #Check
     ss_cables = out_data.sub_sub_cables
     c = 0
     for i in range(len(ss_cables)):
@@ -405,14 +405,14 @@ def cost_sub_sub_cables(in_data,out_data):
         c += (in_data.sub_sub_cable_types[ss_cables[i].cable_type].fixed_cost + in_data.sub_sub_cable_types[ss_cables[i].cable_type].variable_cost*d)
     return c
 
-def proba_echec_sub_land_cable(in_data,out_data,v):
+def proba_echec_sub_land_cable(in_data,out_data,v): #Check
     c_type = out_data.subs[v].land_cable_type
     s_type = out_data.subs[v].substation_type
     p1 = in_data.land_sub_cable_types[c_type].prob_fail
     p2 = in_data.sub_types[s_type].prob_fail
     return p1 + p2
 
-def curtailing_C(in_data,C):
+def curtailing_C(in_data,C): #Check
     return in_data.params.curtailing_cost * C + in_data.params.curtailing_penalty * max(0,(C - in_data.params.maximum_curtailing))
 
 def power_sent_to_v(in_data,out_data,v,scena):
