@@ -25,13 +25,15 @@ OUT_SUFFIX = '-out-1' # TODO : to have different solutions names
 
 @dataclass
 class CableType:
+    id: int
     rating: float
     variable_cost: float
     fixed_cost: float
     prob_fail: Optional[float]
 
-    def import_(data):
+    def import_(data, id):
         return CableType(
+            id = id,
             rating = data["rating"],
             variable_cost = data["variable_cost"],
             fixed_cost = data["fixed_cost"],
@@ -41,7 +43,7 @@ class CableType:
     def import_list(data):
         def aux(data, id):
             assert data["id"] == id+1
-            return CableType.import_(data)
+            return CableType.import_(data, id)
 
         return [aux(item, id) for id, item in enumerate(data)]
 
@@ -66,12 +68,14 @@ class Location:
 
 @dataclass
 class SubstationType:
+    id: int
     cost: float
     prob_fail: float
     rating: float
 
-    def import_(data):
+    def import_(data, id):
         return SubstationType(
+            id = id,
             cost = data["cost"],
             prob_fail = data["probability_of_failure"],
             rating = data["rating"]
@@ -80,7 +84,7 @@ class SubstationType:
     def import_list(data):
         def aux(data, id):
             assert data["id"] == id+1
-            return SubstationType.import_(data)
+            return SubstationType.import_(data, id)
 
         return [aux(item, id) for id, item in enumerate(data)]
 
