@@ -206,10 +206,10 @@ class Solution:
     def cost(self, in_data):
         return cost_sol(in_data, self)
 
-    def cost_lone_sub(self, sub_id, in_data):
-        return self.cost(in_data)
+    def cost_lone_sub(self, in_data, sub_id, turbines_of_subs):
+        return cost_lone_sub(in_data, self, sub_id, turbines_of_subs)
 
-    def cost_paired_sub(self, cable_id, in_data):
+    def cost_paired_sub(self, in_data, cable_id, turbines_of_subs):
         return self.cost(in_data)
 
 # ---- Data utils functions
@@ -520,6 +520,9 @@ def cost_operational_cost(in_data,out_data):
 
 def cost_sol(in_data,out_data):
     return cost_construction_substation(in_data,out_data) + cost_land_subs_cables(in_data,out_data) + cost_turbine_cables(in_data,out_data) + cost_sub_sub_cables(in_data,out_data) + cost_operational_cost(in_data,out_data)
+
+def cost_lone_sub(in_data, sol, sub_id, turbines_of_subs):
+    return cost_sol(in_data, sol)
 
 def is_better_sol(old_sol_value, new_sol_value):
     return new_sol_value < old_sol_value # TODO : Replace by < if the best value is the lower one
