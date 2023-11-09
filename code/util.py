@@ -19,7 +19,7 @@ OUT_SUFFIX = '-out-1' # TODO : to have different solutions names
 
 # ========== Constants ==========
 
-# TODO: depends on the subject
+# TODO: depends on the subject [?]
 
 # ========== Data ==========
 
