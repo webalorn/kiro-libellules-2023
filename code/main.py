@@ -1,5 +1,7 @@
 from util import *
 import time
+import copy
+import micro_opti
 # TODO : should import functions from modules
 
 def generate_base_solution(in_data: Input):
@@ -36,10 +38,11 @@ def generate_base_solution(in_data: Input):
             substation_types.sort(key=lambda s_type: (s_type.cost))
             sol.subs[sub_id].substation_type = substation_types[0].id
     return sol
-    
 
-def improve_sol(data):
-    return data # TODO : use functions from modules
+def improve_sol(input_data, sol):
+    sol = copy.deepcopy(sol)
+    micro_opti.optimize_types(input_data, sol)
+    return sol # TODO : use functions from modules
 
 # ========== Main loop ==========
 
@@ -64,13 +67,13 @@ def main():
         
     
     # This will try to improve every solution stored in ../inputs
-    # N_TRY_IMPROVE = 10 # TODO : number of iterations
-    # for name in inputs_names:
-    #     print(f"========== IMPROVE {name} ==========")
-    #     in_data = IN_DATA[name]
-    #     for _ in range(N_TRY_IMPROVE):
-    #         sol_data = improve_sol(BEST_SOLS_DATA[name])
-    #         output_sol_if_better(name, sol_data)
+    N_TRY_IMPROVE = 10 # TODO : number of iterations
+    for name in inputs_names:
+        print(f"========== IMPROVE {name} ==========")
+        in_data = IN_DATA[name]
+        for _ in range(N_TRY_IMPROVE):
+            sol_data = improve_sol(in_data, BEST_SOLS_DATA[name])
+            output_sol_if_better(name, sol_data)
     
     
     end_time = time.time()

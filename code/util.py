@@ -173,6 +173,24 @@ class Solution:
     sub_sub_cables: List[SubSubCable]
     turbines: List[int]
 
+    # return subs that are not aconnected to another sub
+    def lone_subs(self):
+        paired_subs = []
+        ret = []
+        for cable in self.sub_sub_cables:
+            paired_subs.append(cable.sub_id_a)
+            paired_subs.append(cable.sub_id_b)
+        for id, sub in enumerate(self.subs):
+            if sub is not None and id not in paired_subs:
+                ret.append(id)
+        return ret
+
+    def cost(self):
+        return eval_sol(self)
+
+    def cost_lone_sub(self, sub_id):
+        return self.cost()
+
 # ---- Data utils functions
 
 def dist(loc1, loc2):
@@ -212,7 +230,7 @@ def _out_with_suffix(name):
 def read_sol(name):
     p = Path('../sols') / _out_with_suffix(name)
     with open(str(p), 'r') as f:
-        data = output_to_sol(json.load(f))
+        data = output_to_sol(IN_DATA[name], json.load(f))
     return data
 
 def sol_to_output(out_data):
@@ -260,10 +278,10 @@ def sol_to_output(out_data):
 def output_to_sol(in_data,sol): #in_data preprocess
 
     # Construction subs
-    sub = sol["substations"]
-    nb_pos = len(in_data["sub_locations"])
+    subs = sol["substations"]
+    nb_pos = len(in_data.sub_locations)
     substation = [None]*nb_pos
-    for i in sub:
+    for i in subs:
         substation[i["id"]-1] = SubInstance(land_cable_type=i["land_cable_type"]-1,substation_type=i["substation_type"]-1)
     
     # Construction sub_sub_cables
@@ -292,7 +310,7 @@ def output_sol_if_better(name, data):
         even solution already written in the JSON file is even better.
         Updates BEST_SOLS_DATA and BEST_SOLS """
     sol_val = eval_sol(data)
-    if name in BEST_SOLS and is_better_sol(sol_val, BEST_SOLS[name]):
+    if name in BEST_SOLS and not is_better_sol(BEST_SOLS[name], sol_val):
         return False
     BEST_SOLS[name] = sol_val
     BEST_SOLS_DATA[name] = data
@@ -300,7 +318,7 @@ def output_sol_if_better(name, data):
     cur_file_sol = None
     try:
         cur_file_sol = read_sol(name)
-    except:
+    except FileNotFoundError:
         pass
     if cur_file_sol is not None:
         old_val = eval_sol(cur_file_sol)
@@ -439,7 +457,7 @@ def eval_sol(data):
     return 0
 
 def is_better_sol(old_sol_value, new_sol_value):
-    return new_sol_value > old_sol_value # TODO : Replace by < if the best value is the lower one
+    return new_sol_value < old_sol_value # TODO : Replace by < if the best value is the lower one
             
 
 # ========== Utilities ==========
