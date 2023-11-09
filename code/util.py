@@ -361,7 +361,7 @@ def eval_land_subs_cables(in_data,out_data):
     for i in range(len(sub)):
         subi = sub[i]
         if subi!=None:
-            type_c = i.land_cable_type
+            type_c = subi.land_cable_type
             c1 = in_data.land_sub_cable_types[type_c].fixed_cost
             c2 = in_data.land_sub_cable_types[type_c].variable_cost
             xsub,ysub=(in_data.sub_locations[i].x,in_data.sub_locations[i].y)
@@ -377,7 +377,7 @@ def eval_turbine_cables(in_data,out_data):
         xsub,ysub=(in_data.sub_locations[i].x,in_data.sub_locations[i].y)
         xturb,yturb=(in_data.turb_locations[t].x,in_data.turb_locations[t].y)
         d = distance((xsub,ysub),(xturb,yturb))
-        c+=in_data.params.turb_cable_fixed_cost+in_data.params.turb_cable_variable.cost*d
+        c+=in_data.params.turb_cable_fixed_cost+in_data.params.turb_cable_variable_cost*d
     return c
 
 def eval_sub_sub_cables(in_data,out_data):
