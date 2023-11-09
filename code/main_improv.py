@@ -52,7 +52,7 @@ def main():
     # # If we want to tune only some solutions ->
     # inputs_names = ['toy.json', 'small.json', 'medium.json', 'large.json', 'huge.json']
     #inputs_names = ['medium.json'] 
-    inputs_names = ['small.json', 'medium.json', 'large.json']
+    inputs_names = ['small.json', 'medium.json', 'large.json', 'huge.json']
 
     start_time = time.time()
     read_all_inputs()

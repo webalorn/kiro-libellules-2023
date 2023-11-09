@@ -212,6 +212,8 @@ class Solution:
         for turb_id, turb_sub in enumerate(self.turbines):
             ret[turb_sub].append(turb_id)
 
+        return ret
+
     def cost(self, in_data):
         return cost_sol(in_data, self)
 
@@ -554,7 +556,7 @@ def cost_lone_sub(in_data, sol, sub_id, turbines_of_subs):
         d=distance((xs,ys),(xt,yt))
         cost_cable_turbine += in_data.params.turb_cable_fixed_cost + in_data.params.turb_cable_variable_cost*d
     distsol = distance((0,0),(xs,ys))
-    return cost_cable_turbine + cable_land_type.fixed_cost + distsol*cable_land_type.variable_cost + sub_type.cost
+    return cost_cable_turbine + in_data.land_sub_cable_types[cable_land_type].fixed_cost + distsol*in_data.land_sub_cable_types[cable_land_type].variable_cost + in_data.sub_types[sub_type].cost
 
 
 def is_better_sol(old_sol_value, new_sol_value):
