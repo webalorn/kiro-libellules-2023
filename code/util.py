@@ -425,17 +425,13 @@ def proba_echec_sub_land_cable(in_data,out_data,v): #Check
 def curtailing_C(in_data,C): #Check
     return in_data.params.curtailing_cost * C + in_data.params.curtailing_penalty * max(0,(C - in_data.params.maximum_curtailing))
 
-def power_sent_to_v(in_data,out_data,v,scena):
+def power_sent_to_v(v_fils,scena):
     c = 0
     turbine_power = scena.turb_power
-    turb = out_data.turbines
-    for i in range(len(turb)):
-        if turb[i] == v:
-            c += turbine_power
-    return c
+    return turbine_power * len(v_fils)
 
-def curtailing_v_under_fixed_scena(in_data,scena,out_data,v):
-    c = power_sent_to_v(in_data,out_data,v,scena)
+def curtailing_v_under_fixed_scena(in_data,scena,out_data,v,turbs_fils):
+    c = power_sent_to_v(turbs_fils[v],scena)
 
     sub_type = out_data.subs[v].substation_type
     maxcapsub = in_data.sub_types[sub_type].rating
@@ -446,16 +442,16 @@ def curtailing_v_under_fixed_scena(in_data,scena,out_data,v):
 
     return max(0,c-maxcap)
 
-def curtailing_Cn_scena_fixed(in_data,out_data,scena):
+def curtailing_Cn_scena_fixed(in_data,out_data,scena,turbs_fils):
     sub = out_data.subs
     c = 0 
     for v in range(len(sub)):
         if sub[v]!=None:
-            c += curtailing_v_under_fixed_scena(in_data,scena,out_data,v)
+            c += curtailing_v_under_fixed_scena(in_data,scena,out_data,v,turbs_fils)
     return c
 
-def curtailing_v_scena_fixed_failure_v(in_data,out_data,scena,v):
-    c = power_sent_to_v(in_data,out_data,v,scena)
+def curtailing_v_scena_fixed_failure_v(in_data,out_data,scena,v,turbs_fils):
+    c = power_sent_to_v(turbs_fils[v],scena)
 
     cbis = 0
     sub_sub_cable = out_data.sub_sub_cables
@@ -467,9 +463,9 @@ def curtailing_v_scena_fixed_failure_v(in_data,out_data,scena,v):
     
     return max(0,(c-cbis))
 
-def curtailing_vbar_scena_fixed_failure_v(in_data,out_data,scena,v):
+def curtailing_vbar_scena_fixed_failure_v(in_data,out_data,scena,v,turbs_fils):
     
-    c3 = power_sent_to_v(in_data,out_data,v,scena)
+    c3 = power_sent_to_v(turbs_fils[v],scena)
     c1 = 0
     c2 = 0
     maxcap = 0
@@ -480,7 +476,7 @@ def curtailing_vbar_scena_fixed_failure_v(in_data,out_data,scena,v):
                 vbar = ss_cable[i].sub_id_b
             else:
                 vbar == ss_cable[i].sub_id_a
-            c1 = power_sent_to_v(in_data,out_data,vbar,scena)
+            c1 = power_sent_to_v(turbs_fils[vbar],scena)
             c2 = min(in_data.sub_sub_cable_types[ss_cable[i].cable_type].rating,c3)
 
             sub_type = out_data.subs[vbar].substation_type
@@ -494,32 +490,33 @@ def curtailing_vbar_scena_fixed_failure_v(in_data,out_data,scena,v):
     
 
 
-def curtailing_Cf_scena_fixed(in_data,scena,out_data,v):
+def curtailing_Cf_scena_fixed(in_data,scena,out_data,v,turbs_fils):
 
-    return curtailing_v_scena_fixed_failure_v(in_data,out_data,scena,v) + curtailing_vbar_scena_fixed_failure_v(in_data,out_data,scena,v)
+    return curtailing_v_scena_fixed_failure_v(in_data,out_data,scena,v,turbs_fils) + curtailing_vbar_scena_fixed_failure_v(in_data,out_data,scena,v,turbs_fils)
 
-def cost_scena_fixed(scena,in_data,out_data):
+def cost_scena_fixed(scena,in_data,out_data,turbs_fils):
     sub = out_data.subs
     c = 0
     for v in range(len(sub)):
         if sub[v] != None:
-            c += (proba_echec_sub_land_cable(in_data,out_data,v)*curtailing_C(in_data,curtailing_Cf_scena_fixed(in_data,scena,out_data,v)))
+            c += (proba_echec_sub_land_cable(in_data,out_data,v)*curtailing_C(in_data,curtailing_Cf_scena_fixed(in_data,scena,out_data,v,turbs_fils)))
             c1 = proba_echec_sub_land_cable(in_data,out_data,v)
             c1 = 1 - c1
-            c1 *= curtailing_C(in_data,curtailing_Cn_scena_fixed(in_data,out_data,scena))
+            c1 *= curtailing_C(in_data,curtailing_Cn_scena_fixed(in_data,out_data,scena,turbs_fils))
     return c + c1
 
 
-def cost_operational_cost(in_data,out_data):
+def cost_operational_cost(in_data,out_data,turbs_fils):
     scenario = in_data.wind_scenarios
     c = 0
     for scena in scenario:
-        c += scena.prob * cost_scena_fixed(scena,in_data,out_data)
+        c += scena.prob * cost_scena_fixed(scena,in_data,out_data,turbs_fils)
 
     return c
 
 def cost_sol(in_data,out_data):
-    return cost_construction_substation(in_data,out_data) + cost_land_subs_cables(in_data,out_data) + cost_turbine_cables(in_data,out_data) + cost_sub_sub_cables(in_data,out_data) + cost_operational_cost(in_data,out_data)
+    turbs_fils = turbines_subs_link(in_data,out_data)
+    return cost_construction_substation(in_data,out_data) + cost_land_subs_cables(in_data,out_data) + cost_turbine_cables(in_data,out_data) + cost_sub_sub_cables(in_data,out_data) + cost_operational_cost(in_data,out_data,turbs_fils)
 
 def is_better_sol(old_sol_value, new_sol_value):
     return new_sol_value < old_sol_value # TODO : Replace by < if the best value is the lower one
