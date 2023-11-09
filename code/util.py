@@ -530,19 +530,8 @@ def cost_sol(in_data, sol):
 def cost_lone_sub_fixed_scena(in_data,sol, sub_id, turbines_of_subs, scena):
     power = scena.turb_power
     received_power = power*len(turbines_of_subs[sub_id])
-    sub = sol.subs[sub_id]
-    sub_type = sub.substation_type
-    cable_land_type = sub.land_cable_type
-    cost_cable_turbine = 0
-    xs,ys = (sol.sub_locations[sub_id].x,sol.sub_locations[sub_id].y)
-    for i in range(len(turbines_of_subs[sub_id])):
-        turb = turbines_of_subs[sub_id][i]
-        xt,yt = (sol.turb_locations[turb].x,sol.turb_locations[turb].y)
-        d=distance((xs,ys),(xt,yt))
-        cost_cable_turbine += sol.params.turb_cable_fixed_cost + sol.params.turb_cable_variable_cost*d
-    distsol = distance((0,0),(xs,ys))
-    return cost_cable_turbine + cable_land_type.fixed_cost + distsol*cable_land_type.variable_cost + sub_type.cost
 
+    return 
 
 
 def cost_lone_sub(in_data, sol, sub_id, turbines_of_subs):
@@ -550,18 +539,15 @@ def cost_lone_sub(in_data, sol, sub_id, turbines_of_subs):
     sub_type = sub.substation_type
     cable_land_type = sub.land_cable_type
     cost_cable_turbine = 0
-    xs,ys = (sol.sub_locations[sub_id].x,sol.sub_locations[sub_id].y)
+    xs,ys = (in_data.sub_locations[sub_id].x,in_data.sub_locations[sub_id].y)
     for i in range(len(turbines_of_subs[sub_id])):
         turb = turbines_of_subs[sub_id][i]
-        xt,yt = (sol.turb_locations[turb].x,sol.turb_locations[turb].y)
+        xt,yt = (in_data.turb_locations[turb].x,in_data.turb_locations[turb].y)
         d=distance((xs,ys),(xt,yt))
-        cost_cable_turbine += sol.params.turb_cable_fixed_cost + sol.params.turb_cable_variable_cost*d
+        cost_cable_turbine += in_data.params.turb_cable_fixed_cost + in_data.params.turb_cable_variable_cost*d
     distsol = distance((0,0),(xs,ys))
     return cost_cable_turbine + cable_land_type.fixed_cost + distsol*cable_land_type.variable_cost + sub_type.cost
 
-
-
-    return cost_sol(in_data, sol)
 
 def is_better_sol(old_sol_value, new_sol_value):
     return new_sol_value < old_sol_value # TODO : Replace by < if the best value is the lower one
