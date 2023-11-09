@@ -182,6 +182,24 @@ class Solution:
     sub_sub_cables: List[SubSubCable]
     turbines: List[int]
 
+    # return subs that are not aconnected to another sub
+    def lone_subs(self):
+        paired_subs = []
+        ret = []
+        for cable in self.sub_sub_cables:
+            paired_subs.append(cable.sub_id_a)
+            paired_subs.append(cable.sub_id_b)
+        for id, sub in enumerate(self.subs):
+            if sub is not None and id not in paired_subs:
+                ret.append(id)
+        return ret
+
+    def cost(self):
+        return eval_sol(self)
+
+    def cost_lone_sub(self, sub_id):
+        return self.cost()
+
 # ---- Data utils functions
 
 def dist(loc1, loc2):
@@ -224,7 +242,7 @@ def _out_with_suffix(name):
 def read_sol(name):
     p = Path('../sols') / _out_with_suffix(name)
     with open(str(p), 'r') as f:
-        data = output_to_sol(json.load(f))
+        data = output_to_sol(IN_DATA[name], json.load(f))
     return data
 
 def sol_to_output(out_data):
@@ -272,10 +290,10 @@ def sol_to_output(out_data):
 def output_to_sol(in_data,sol): #in_data preprocess
 
     # Construction subs
-    sub = sol["substations"]
-    nb_pos = len(in_data["sub_locations"])
+    subs = sol["substations"]
+    nb_pos = len(in_data.sub_locations)
     substation = [None]*nb_pos
-    for i in sub:
+    for i in subs:
         substation[i["id"]-1] = SubInstance(land_cable_type=i["land_cable_type"]-1,substation_type=i["substation_type"]-1)
     
     # Construction sub_sub_cables
@@ -305,7 +323,8 @@ def output_sol_if_better(name, data, sol_val=None):
         Updates BEST_SOLS_DATA and BEST_SOLS """
     if sol_val is None:
         sol_val = eval_sol(data)
-    if name in BEST_SOLS and is_better_sol(sol_val, BEST_SOLS[name]):
+    sol_val = eval_sol(data)
+    if name in BEST_SOLS and not is_better_sol(BEST_SOLS[name], sol_val):
         return False
     BEST_SOLS[name] = sol_val
     BEST_SOLS_DATA[name] = data
@@ -313,7 +332,7 @@ def output_sol_if_better(name, data, sol_val=None):
     cur_file_sol = None
     try:
         cur_file_sol = read_sol(name)
-    except:
+    except FileNotFoundError:
         pass
     if cur_file_sol is not None:
         old_val = eval_sol(cur_file_sol)
@@ -325,6 +344,9 @@ def output_sol_if_better(name, data, sol_val=None):
 
 # ========== Evaluation ==========
 
+def distance(pos1,pos2): #pos1 = (x,y)
+    return sqrt((pos1[0]-pos2[0])**2 + (pos1[1]-pos2[1])**2)
+
 def eval_construction_substation(in_data,out_data):
     c = 0
     sub = out_data.subs
@@ -333,12 +355,137 @@ def eval_construction_substation(in_data,out_data):
             c += in_data.sub_types[i.substation_type].cost
     return c
 
+def eval_cable_onshore_offshore(in_data,out_data):
+    c = 0
+    sub = out_data.subs
+    for i in range(len(sub)):
+        subi = sub[i]
+        if subi!=None:
+            type_c = i.land_cable_type
+            c1 = in_data.land_sub_cable_types[type_c].fixed_cost
+            c2 = in_data.land_sub_cable_types[type_c].variable_cost
+            xsub,ysub=(in_data.sub_locations[i].x,in_data.sub_locations[i].y)
+            d = distance((0,0),(xsub,ysub))
+            c+=c1+d*c2
+    return c
 
-def eval_sol(data):
-    return 0
+def eval_cable_turbine(in_data,out_data):
+    c = 0
+    turb = out_data.turbines
+    for t in range(len(turb)):
+        i = turb[t]
+        xsub,ysub=(in_data.sub_locations[i].x,in_data.sub_locations[i].y)
+        xturb,yturb=(in_data.turb_locations[t].x,in_data.turb_locations[t].y)
+        d = distance((xsub,ysub),(xturb,yturb))
+        c+=in_data.params.turb_cable_fixed_cost+in_data.params.turb_cable_variable.cost*d
+    return c
+
+def proba_echec_subtation_onshore(in_data,out_data,v):
+    c_type = out_data.subs[v].land_cable_type
+    s_type = out_data.subs[v].substationtype
+    p1 = in_data.land_sub_cable_types[c_type].prob_fail
+    p2 = in_data.sub_types[s_type].prob_fail
+    return p1 + p2
+
+def curtailing_C(in_data,C):
+    return in_data.params.curtailing_cost * C + in_data.params.curtailing_penalty * max(0,(C - in_data.params.maximum_curtailing))
+
+def power_sent_to_v(in_data,out_data,v,scena):
+    c = 0
+    turbine_power = scena.turb_power
+    turb = out_data.turbines
+    for i in range(len(turb)):
+        if turb[i] == v:
+            c += turbine_power
+    return c
+
+def curtailing_v_under_fixed_scena(in_data,scena,out_data,v):
+    c = power_sent_to_v(in_data,out_data,v,scena)
+
+    sub_type = out_data.subs[v].substation_type
+    maxcapsub = in_data.sub_types[sub_type].rating
+    cable_type = out_data.subs[v].land_cable_type
+    maxcapcable = in_data.land_sub_cable_types[cable_type].rating
+
+    maxcap = min(maxcapsub,maxcapcable)
+
+    return max(0,c-maxcap)
+
+def curtailing_Cn_scena_fixed(in_data,out_data,scena):
+    sub = out_data.subs
+    c = 0 
+    for v in range(len(sub)):
+        if sub[v]!=None:
+            c += curtailing_v_under_fixed_scena(in_data,scena,out_data,v)
+    return c
+
+def curtailing_v_scena_fixed_failure_v(in_data,out_data,scena,v):
+    c = power_sent_to_v(in_data,out_data,v,scena)
+
+    cbis = 0
+    sub_sub_cable = out_data.sub_sub_cables
+    for i in range(len(sub_sub_cable)):
+        cable = sub_sub_cable[i]
+        if v == cable.sub_id_a or v == cable.sub_id_b:
+            ctype = cable.cable_type
+            cbis += in_data.sub_sub_cable_types[ctype].rating
+    
+    return max(0,(c-cbis))
+
+def curtailing_vbar_scena_fixed_failure_v(in_data,out_data,scena,v):
+    
+    c3 = power_sent_to_v(in_data,out_data,v,scena)
+    ss_cable = out_data.sub_sub_cables
+    for i in range(len(ss_cable)):
+        if ss_cable[i].sub_id_a == v or ss_cable[i].sub_id_b == v:
+            if ss_cable[i].sub_id_a == v:
+                vbar = ss_cable[i].sub_id_b
+            else:
+                vbar == ss_cable[i].sub_id_a
+            c1 = power_sent_to_v(in_data,out_data,vbar,scena)
+            c2 = min(in_data.sub_sub_cable_types[ss_cable[i].cable_type].rating,c3)
+
+            sub_type = out_data.subs[vbar].substation_type
+            maxcapsub = in_data.sub_types[sub_type].rating
+            cable_type = out_data.subs[vbar].land_cable_type
+            maxcapcable = in_data.land_sub_cable_types[cable_type].rating
+
+            maxcap = min(maxcapsub,maxcapcable)
+    
+    return max(0,c1 + c2 - maxcap)
+    
+
+
+def curtailing_Cf_scena_fixed(in_data,scena,out_data,v):
+
+    return curtailing_v_scena_fixed_failure_v(in_data,out_data,scena,v) + curtailing_vbar_scena_fixed_failure_v(in_data,out_data,scena,v)
+
+def eval_scena_fixed(scena,in_data,out_data):
+    sub = out_data.subs
+    c = 0
+    for i in range(len(sub)):
+        if sub[i] != None:
+            v = sub[i]
+            c += (proba_echec_subtation_onshore(in_data,out_data,v)*curtailing_C(in_data,curtailing_Cf_scena_fixed(in_data,scena,out_data,v)))
+            c1 = proba_echec_subtation_onshore(in_data,out_data,v)
+            c1 = 1 - c1
+            c1 *= curtailing_C(in_data,curtailing_Cn_scena_fixed(in_data,out_data,scena))
+    return c + c1
+
+
+def eval_operational_cost(in_data,out_data):
+    scenario = in_data.wind_scenarios
+    c = 0
+    for scena in scenario:
+        c += scena.prob * eval_scena_fixed(scena,in_data,out_data)
+
+    return c
+
+def eval_sol(in_data,out_data):
+    return eval_construction_substation(in_data,out_data) + eval_operational_cost(in_data,out_data)
 
 def is_better_sol(old_sol_value, new_sol_value):
-    return new_sol_value > old_sol_value # TODO : Replace by < if the best value is the lower one
+    return new_sol_value < old_sol_value # TODO : Replace by < if the best value is the lower one
             
 
 # ========== Utilities ==========
