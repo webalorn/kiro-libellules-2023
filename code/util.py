@@ -46,8 +46,14 @@ def _out_with_suffix(name):
 def read_sol(name):
     p = Path('../sols') / _out_with_suffix(name)
     with open(str(p), 'r') as f:
-        data = json.load(f)
+        data = output_to_sol(json.load(f))
     return data
+
+def sol_to_output(data):
+    return data # TODO
+
+def output_to_sol(data):
+    return data # TODO
 
 def output_sol_force_overwrite(name, data):
     p = Path('../sols') / _out_with_suffix(name)
