@@ -121,9 +121,42 @@ def read_sol(name):
         data = output_to_sol(json.load(f))
     return data
 
-def sol_to_output(in_data, out_data):
-    
-    return data # TODO
+def sol_to_output(out_data):
+    out = dict()
+
+    # Construction substations 
+    substation = []
+    for i in range(len(out_data["subs"])):
+        sub = out_data["subs"][i]
+        if sub != None:
+            d = dict()
+            d["id"] = i+1
+            d["land_cable_type"] = sub["land_cable_type"]
+            d["substation_type"] = sub["substation_type"]
+            substation.append(d)
+    out["substations"] = d
+
+    # Construction substation_substation_cables
+    s_s_cables = []
+    for i in range(len(out_data["sub_sub_cables"])):
+        d = dict()
+        cable = out_data["sub_sub_cables"][i]
+        d["substation_id"] = cable["sub_id_a"]
+        d["other_substation_id"] = cable["sub_id_b"]
+        d["cable_type"] = cable["cable_type"]
+        s_s_cables.append(d)
+    out["substation_substation_cables"]=s_s_cables
+
+    #Construction turbines
+    turb = []
+    for i in range(len(out_data["turbines"])):
+        d=dict()
+        d["id"] = i+1
+        d["substation_id"] = out_data["turbines"][i]
+        turb.append(d)
+    out["turbines"] = turb
+
+    return out
 
 def output_to_sol(data):
     return data # TODO
