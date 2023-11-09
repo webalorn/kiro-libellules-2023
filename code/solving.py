@@ -1,6 +1,7 @@
 from util import *
 import random
 from copy import copy
+import time
 
 def find_best_sol(in_data):
     return find_best_sol_stepIsSublocPos(in_data)
@@ -23,35 +24,37 @@ def find_best_sol_stepIsSublocPos(in_data):
 
     # Get sols for each hypothesis
     seen_hyps = set([tuple(hyp) for hyp in hypothesis])
-    hypothesis = [(hyp, ) + find_best_sol_stepIsAssignTurbs(in_data, hyp) for hyp in hypothesis]
+    hypothesis = [(hyp, ) + find_best_sol_stepIsAssignTurbs(in_data, tuple(hyp)) for hyp in hypothesis]
 
     # Generate new hypothesis
     def make_child_hypothesis(hyp, pos_id):
-        new_hyp = copy(hyp)
+        new_hyp = list(hyp)
         new_hyp[pos_id] = False
+        return tuple(new_hyp)
 
-    for _ in range(n_sublocs):
+    for i_iter in range(n_sublocs):
+        print('find_best_sol_stepIsSublocPos, iterate', i_iter+1)
         new_hypothesis = []
         for hyp, sol, score in hypothesis:
-            nb_turb_on_sub = [0 for _ in range(len(n_sublocs))]
+            nb_turb_on_sub = [0 for _ in range(n_sublocs)]
             for subloc in sol.turbines:
                 nb_turb_on_sub[subloc] += 1
             next_remove_list = sorted([
                 (nb_turb_on_sub[i], random.random(), make_child_hypothesis(hyp, i))
                 for i in range(n_sublocs) if hyp[i]
-                if not tuple(make_child_hypothesis(hyp, i)) in seen_hyps
+                if not make_child_hypothesis(hyp, i) in seen_hyps
             ])[:MAX_SUBLOCS_CHILD_HYPOTHESIS]
-            new_hypothesis.extend(next_remove_list)
+            new_hypothesis.extend([hyp_vals[-1] for hyp_vals in next_remove_list])
         
-        seen_hyps.update([tuple(hyp) for hyp in hypothesis])
+        seen_hyps.update(new_hypothesis)
         new_hypothesis = [(hyp, ) + find_best_sol_stepIsAssignTurbs(in_data, hyp) for hyp in new_hypothesis]
 
         # Keep best hypothesis
         hypothesis = hypothesis + new_hypothesis
-        hypothesis.sort(lambda hyp_sol_score: hyp_sol_score[-1])
+        hypothesis.sort(key=lambda hyp_sol_score: hyp_sol_score[-1])
         hypothesis = hypothesis[:MAX_SUBLOCS_HYPOTHESIS]
     
-    hypothesis.sort(lambda hyp_sol_score: hyp_sol_score[-1])
+    hypothesis.sort(key=lambda hyp_sol_score: hyp_sol_score[-1])
     _, sol, score = hypothesis[0]
     return sol, score
 
@@ -77,21 +80,28 @@ def find_best_sol_stepIsAssignTurbs(in_data, allowed_sublocs):
     
     # Get a set of assignments
     possible_solutions = {tuple([0] * n_turbs)}
-    prev_len = 0
-    while len(possible_solutions) > prev_len and len(possible_solutions) < MAX_ASSIGN_TURB_HYPOTHESIS * n_turbs:
+    next_possible_solutions = []
+    while len(possible_solutions) < MAX_ASSIGN_TURB_HYPOTHESIS * n_turbs:
         for sol in possible_solutions:
             for k in range(n_turbs):
-                if sol[k] < n_allowed_sublocs:
+                if sol[k] < n_allowed_sublocs-1:
                     sol2 = list(sol)
                     sol2[k] += 1
-                    possible_solutions.append(sol2)
+                    next_possible_solutions.append(tuple(sol2))
+        if not next_possible_solutions:
+            break
+        possible_solutions.update(next_possible_solutions)
+        next_possible_solutions = []
     possible_solutions = list(possible_solutions)
-    possible_solutions.sort(key = lambda sol : sum([closest_sublocs_to_turbs[i_turb][sol[i_turb]] for i_turb in range(n_turbs)]))
-    hypothesis = possible_solutions[:MAX_ASSIGN_TURB_HYPOTHESIS]
+    possible_solutions.sort(key = lambda sol : sum([closest_sublocs_to_turbs[i_turb][sol[i_turb]][0] for i_turb in range(n_turbs)]))
+    hypothesis = [
+        [closest_sublocs_to_turbs[i_turb][sol[i_turb]][1] for i_turb in range(n_turbs)]
+        for sol in possible_solutions[:MAX_ASSIGN_TURB_HYPOTHESIS]
+    ]
 
     ### Get sols for each hypothesis
     hypothesis = [(hyp, ) + find_best_sol_setpIsAssignCables(in_data, hyp) for hyp in hypothesis]
-    hypothesis.sort(lambda hyp_sol_score: hyp_sol_score[-1])
+    hypothesis.sort(key=lambda hyp_sol_score: hyp_sol_score[-1])
     _, sol, score = hypothesis[0]
     return sol, score
 
@@ -114,7 +124,7 @@ def find_best_sol_setpIsAssignCables(in_data, turbines_assignments):
     
     # Get a max power estimate weighted by probabilities
     max_power = sum([
-        scenario.turb_power ** SCENARIO_PRODUCTION_POW * scenario.probability
+        scenario.turb_power ** SCENARIO_PRODUCTION_POW * scenario.prob
         for scenario in in_data.wind_scenarios]
     ) ** (1/SCENARIO_PRODUCTION_POW)
     
@@ -139,4 +149,7 @@ def find_best_sol_setpIsAssignCables(in_data, turbines_assignments):
             )
             sol.subs[sub_id].substation_type = substation_types[0].id
     
-    return sol, eval_sol(sol)
+    score = eval_sol(in_data, sol)
+    # print("Got score of", eval_sol(in_data, sol))
+    output_sol_if_better(in_data, sol, score)
+    return sol, score

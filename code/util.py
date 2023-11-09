@@ -21,12 +21,19 @@ OUT_SUFFIX = '-out-1' # TODO : to have different solutions names
 
 # TODO: depends on the subject 
 
-MAX_SUBLOCS_HYPOTHESIS = 20
-MAX_SUBLOCS_CHILD_HYPOTHESIS = 4
+# MAX_SUBLOCS_HYPOTHESIS = 20
+# MAX_SUBLOCS_CHILD_HYPOTHESIS = 4
+# MAX_ASSIGN_TURB_HYPOTHESIS = 200
 
-MAX_ASSIGN_TURB_HYPOTHESIS = 200
+# MAX_SUBLOCS_HYPOTHESIS = 20
+# MAX_SUBLOCS_CHILD_HYPOTHESIS = 4
+# MAX_ASSIGN_TURB_HYPOTHESIS = 20
+
+MAX_SUBLOCS_HYPOTHESIS = 2
+MAX_SUBLOCS_CHILD_HYPOTHESIS = 1
+MAX_ASSIGN_TURB_HYPOTHESIS = 2
+
 SCENARIO_PRODUCTION_POW = 2
-
 CHOOSE_CABLE_LOST_POWER_COEFF = 2
 CHOOSE_CABLE_PENALTY_COEFF = 1
 
@@ -145,6 +152,7 @@ class Input:
     sub_types: List[SubstationType]
     wind_scenarios: List[WindScenario]
     turb_locations: List[Location]
+    name: str
 
     def import_(data):
         return Input(
@@ -154,7 +162,8 @@ class Input:
             sub_sub_cable_types = CableType.import_list(data["substation_substation_cable_types"]),
             sub_types = SubstationType.import_list(data["substation_types"]),
             wind_scenarios = WindScenario.import_list(data["wind_scenarios"]),
-            turb_locations = Location.import_list(data["wind_turbines"])
+            turb_locations = Location.import_list(data["wind_turbines"]),
+            name=None,
         )
 
 # ---- Out dataclasses
@@ -230,7 +239,9 @@ def read_input(name):
     p = Path('../inputs') / name
     with open(str(p), 'r') as f:
         data = json.load(f)
-    return preprocess_input(data)
+    d = preprocess_input(data)
+    d.name = name
+    return d
 
 def read_all_inputs():
     for name in INPUT_NAMES:
@@ -317,10 +328,11 @@ def output_sol_force_overwrite(name, data):
     with open(str(p), 'w') as f:
         json.dump(sol_to_output(data), f)
 
-def output_sol_if_better(name, in_data, data, sol_val=None):
+def output_sol_if_better(in_data, data, sol_val=None):
     """ Returns True if the solution is better than the last found solution in this program run,
         even solution already written in the JSON file is even better.
         Updates BEST_SOLS_DATA and BEST_SOLS """
+    name = in_data.name
     if sol_val is None:
         sol_val = eval_sol(in_data, data)
     sol_val = eval_sol(in_data, data)
