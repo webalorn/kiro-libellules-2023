@@ -47,10 +47,6 @@ class Locaction:
 
 @dataclass
 class SubstationType:
-
-
-@dataclass
-class SubstationType:
     cost: int
     prob_fail: float
     rating: int
