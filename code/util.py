@@ -464,7 +464,7 @@ def curtailing_v_scena_fixed_failure_v(in_data,out_data,scena,v,turbs_fils):
     return max(0,(c-cbis))
 
 def curtailing_vbar_scena_fixed_failure_v(in_data,out_data,scena,v,turbs_fils):
-    
+    c = 0
     c3 = power_sent_to_v(turbs_fils[v],scena)
     c1 = 0
     c2 = 0
@@ -486,7 +486,8 @@ def curtailing_vbar_scena_fixed_failure_v(in_data,out_data,scena,v,turbs_fils):
 
             maxcap = min(maxcapsub,maxcapcable)
     
-    return max(0,c1 + c2 - maxcap)
+        c += max(0,c1 + c2 - maxcap)
+    return c
     
 
 
