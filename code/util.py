@@ -2,7 +2,6 @@ from pathlib import Path
 from collections import deque, namedtuple
 from math import *
 from random import randint, shuffle
-from typing import List, Optional
 from dataclasses import dataclass, asdict
 
 import numpy as np
@@ -122,7 +121,8 @@ def read_sol(name):
         data = output_to_sol(json.load(f))
     return data
 
-def sol_to_output(data):
+def sol_to_output(in_data, out_data):
+    
     return data # TODO
 
 def output_to_sol(data):
