@@ -51,6 +51,8 @@ def main():
     start_time = time.time()
     read_all_inputs()
 
+    return
+
     N_TRY_GENERATE = 1 # TODO : number of iterations
     for name in inputs_names:
         print(f"========== GENERATE {name} ==========")
