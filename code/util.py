@@ -30,16 +30,6 @@ class CableType:
     prob_fail: float
 
 @dataclass
-class GeneralParameters:
-    fixed_cost_cable: float
-    variable_cost_cable: float
-    curtailing_penalty: float
-    curtailing_cost: float
-    main_land_station: dict
-    maximum_power: int
-    maximum_curtailing: float
-
-@dataclass
 class Locaction:
     x: int
     y: int
@@ -49,6 +39,16 @@ class SubstationType:
     cost: int
     prob_fail: float
     rating: int
+
+@dataclass
+class GeneralParameters:
+    curtailing_penalty: float
+    curtailing_cost: float
+    turb_cable_fixed_cost: float
+    turb_cable_variable_cost: float
+    main_land_station: Locaction
+    maximum_power: int
+    maximum_curtailing: float
 
 @dataclass
 class WindScenario:
@@ -64,6 +64,17 @@ class Input:
     sub_types: list[SubstationType]
     wind_scenarios: list[WindScenario]
     turb_locations: list[Locaction]
+
+    def import(data):
+        return Input(
+            params = GeneralParameters.import(data["general_parameters"])
+            land_sub_cable_types = CableType.import_list(data["land_substation_cable_types"])
+            sub_locations = Locaction.import_list(data["substation_locations"])
+            sub_sub_cable_types = CableType.import_list(data["substation_substation_cable_types"])
+            sub_types = SubstationType.import_list(data["substation_types"])
+            wind_scenarios = WindScenario.import_list(data["wind_scenarios"])
+            turb_locations = Locaction.import_list(data["wind_turbines"])
+        )
 
 # ---- Out dataclasses
 
@@ -99,8 +110,7 @@ def generate_empty_solution(in_data):
 # ========== Input / Output ==========
 
 def preprocess_input(data):
-    # TODO si nécessaire ??
-    return data
+    return Input.import(data)
 
 def read_input(name):
     p = Path('../inputs') / name
