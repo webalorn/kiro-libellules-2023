@@ -151,13 +151,13 @@ class Input:
 # ---- Out dataclasses
 
 @dataclass
-class OutSubLocation:
+class SubInstance:
     # pos_id: int
     land_cable_type: int
     substation_type: int
 
 @dataclass
-class OutSubSubCable:
+class SubSubCable:
     sub_id_a: int
     sub_id_b: int
     cable_type: int
@@ -168,9 +168,9 @@ OutTurbineLoc = int
 #     turb_id: int
 
 @dataclass
-class OutData:
-    subs: List[Optional[OutSubLocation]]
-    sub_sub_cables: List[OutSubSubCable]
+class Solution:
+    subs: List[Optional[SubInstance]]
+    sub_sub_cables: List[SubSubCable]
     turbines: List[int]
 
 # ---- Data utils functions
@@ -216,10 +216,12 @@ def read_sol(name):
     return data
 
 def sol_to_output(out_data):
-    out = dict()
+    out = {
+        'substations': [],
+    }
 
     # Construction substations 
-    substation = []
+    out["substations"] = []
     for i in range(len(out_data.subs)):
         sub = out_data.subs[i]
         if sub != None:
@@ -227,8 +229,7 @@ def sol_to_output(out_data):
             d["id"] = i+1
             d["land_cable_type"] = sub.land_cable_type + 1
             d["substation_type"] = sub.substation_type + 1
-            substation.append(d)
-    out["substations"] = d
+            out["substations"].append(d)
 
     # Construction substation_substation_cables
     s_s_cables = []
@@ -263,13 +264,13 @@ def output_to_sol(in_data,sol): #in_data preprocess
     nb_pos = len(in_data["sub_locations"])
     substation = [None]*nb_pos
     for i in sub:
-        substation[i["id"]-1] = OutSubLocation(land_cable_type=i["land_cable_type"]-1,substation_type=i["substation_type"]-1)
+        substation[i["id"]-1] = SubInstance(land_cable_type=i["land_cable_type"]-1,substation_type=i["substation_type"]-1)
     
     # Construction sub_sub_cables
     ss_cables = []
     cables = sol["substation_substation_cables"]
     for c in cables:
-        ss_cables.append(OutSubSubCable(sub_id_a=c["substation_id"]-1,sub_id_b=c["ohter_substation_id"]-1,cable_type=c["cable_type"]-1))
+        ss_cables.append(SubSubCable(sub_id_a=c["substation_id"]-1,sub_id_b=c["ohter_substation_id"]-1,cable_type=c["cable_type"]-1))
     
     # Construction turbines
     turb = sol["turbines"]
@@ -277,7 +278,7 @@ def output_to_sol(in_data,sol): #in_data preprocess
     for t in turb:
         new_turb.append(t["substation_id"]-1)
 
-    return OutData(subs=substation,sub_sub_cables=ss_cables,turbines=new_turb) 
+    return Solution(subs=substation,sub_sub_cables=ss_cables,turbines=new_turb) 
 
 
 

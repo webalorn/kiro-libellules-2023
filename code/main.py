@@ -7,7 +7,7 @@ def generate_base_solution(in_data: Input):
     n_subs = len(in_data.sub_locations)
     n_turbs = len(in_data.turb_locations)
 
-    sol = OutData(
+    sol = Solution(
         subs=[None for _ in range(n_subs)],
         sub_sub_cables=[],
         turbines=[None for _ in range(n_turbs)],
@@ -26,7 +26,7 @@ def generate_base_solution(in_data: Input):
     for sub_id in range(n_subs):
         power_here = max_power * len(turbs_at_sub[sub_id])
         if power_here:
-            sol.subs[sub_id] = OutSubLocation(None, None)
+            sol.subs[sub_id] = SubInstance(None, None)
 
             cables_types = list(in_data.land_sub_cable_types)
             cables_types.sort(key=lambda c_type: (c_type.rating < power_here, c_type.fixed_cost))
@@ -46,7 +46,7 @@ def improve_sol(data):
 def main():
     inputs_names = INPUT_NAMES
     # If we want to tune only some solutions ->
-    # inputs_names = [] 
+    # inputs_names = ['small.json'] 
 
     start_time = time.time()
     read_all_inputs()
@@ -64,13 +64,13 @@ def main():
         
     
     # This will try to improve every solution stored in ../inputs
-    N_TRY_IMPROVE = 10 # TODO : number of iterations
-    for name in inputs_names:
-        print(f"========== IMPROVE {name} ==========")
-        in_data = IN_DATA[name]
-        for _ in range(N_TRY_IMPROVE):
-            sol_data = improve_sol(BEST_SOLS_DATA[name])
-            output_sol_if_better(name, sol_data)
+    # N_TRY_IMPROVE = 10 # TODO : number of iterations
+    # for name in inputs_names:
+    #     print(f"========== IMPROVE {name} ==========")
+    #     in_data = IN_DATA[name]
+    #     for _ in range(N_TRY_IMPROVE):
+    #         sol_data = improve_sol(BEST_SOLS_DATA[name])
+    #         output_sol_if_better(name, sol_data)
     
     
     end_time = time.time()
