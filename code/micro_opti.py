@@ -1,4 +1,5 @@
 import util
+import random
 
 def optimize_types(input_data, sol):
     for sub_id in sol.lone_subs():
@@ -55,3 +56,16 @@ def optimize_types(input_data, sol):
         sol.subs[cable.sub_id_b].substation_type = best_sub_type_b
         sol.subs[cable.sub_id_b].land_cable_type = best_cable_type_b
         cable.cable_id = best_cable_type_pair
+
+# def optimize_pairs(in_data, sol):
+#     base_sub_sub_cables = sol.sub_sub_cables
+#     n_subs = len(in_data.sub_locations)
+#     pairs = []
+#     for i_sub_a in range(n_subs):
+#         for i_sub_b in range(n_subs):
+#             if not sol.subs[i_sub_a] or not sol.subs[i_sub_b] or i_sub_a != i_sub_b:
+#                 continue
+#             pairs.append((i_sub_a, i_sub_b))
+#     random.shuffle(pairs)
+
+#     for i_sub_a, i_sub_b in pairs:
