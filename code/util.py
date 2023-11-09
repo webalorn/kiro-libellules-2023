@@ -173,6 +173,18 @@ class OutData:
     sub_sub_cables: List[OutSubSubCable]
     turbines: List[int]
 
+# ---- Data utils functions
+
+def dist(loc1, loc2):
+    return sqrt((loc1.x - loc2.x)**2 + (loc1.y - loc2.y)**2)
+
+def argmin(l): return l.index(min(l))
+def argmax(l): return l.index(max(l))
+
+def dict_min(d): return min(d.values())
+def dict_max(d): return max(d.values())
+def dict_argmin(d):m = dict_min(d);return [el for el, v in d.items() if v==m][0]
+def dict_argmax(d):m = dict_max(d);return [el for el, v in d.items() if v==m][0]
 
 # ========== Compute vals on sols ==========
 
@@ -208,20 +220,24 @@ def sol_to_output(out_data):
 
     # Construction substations 
     substation = []
-    for i in range(len(out_data["subs"])):
-        sub = out_data["subs"][i]
+    for i in range(len(out_data.subs)):
+        sub = out_data.subs[i]
         if sub != None:
             d = dict()
             d["id"] = i+1
-            d["land_cable_type"] = sub["land_cable_type"]+1
-            d["substation_type"] = sub["substation_type"]+1
+            d["land_cable_type"] = sub.land_cable_type + 1
+            d["substation_type"] = sub.substation_type + 1
             substation.append(d)
     out["substations"] = d
 
     # Construction substation_substation_cables
     s_s_cables = []
-    for i in range(len(out_data["sub_sub_cables"])):
+    for i in range(len(out_data.sub_sub_cables)):
         d = dict()
+        cable = out_data.sub_sub_cables[i]
+        d["substation_id"] = cable.sub_id_a+1
+        d["other_substation_id"] = cable.sub_id_b+1
+        d["cable_type"] = cable.cable_type
         cable = out_data["sub_sub_cables"][i]
         d["substation_id"] = cable["sub_id_a"]+1
         d["other_substation_id"] = cable["sub_id_b"]+1
@@ -231,10 +247,10 @@ def sol_to_output(out_data):
 
     #Construction turbines
     turb = []
-    for i in range(len(out_data["turbines"])):
+    for i in range(len(out_data.turbines)):
         d=dict()
         d["id"] = i+1
-        d["substation_id"] = out_data["turbines"][i]+1
+        d["substation_id"] = out_data.turbines[i]+1
         turb.append(d)
     out["turbines"] = turb
 
@@ -268,7 +284,7 @@ def output_to_sol(in_data,sol): #in_data preprocess
 def output_sol_force_overwrite(name, data):
     p = Path('../sols') / _out_with_suffix(name)
     with open(str(p), 'w') as f:
-        json.dump(data, f)
+        json.dump(sol_to_output(data), f)
 
 def output_sol_if_better(name, data):
     """ Returns True if the solution is better than the last found solution in this program run,
